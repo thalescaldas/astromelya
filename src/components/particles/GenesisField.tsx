@@ -5,29 +5,30 @@ import { runField } from "@/animations/field";
 import styles from "./GenesisField.module.css";
 
 interface GenesisFieldProps {
+  /** Máscara de oclusão da flor (mantém todas as partículas atrás dela). */
+  maskSrc: string;
   children: ReactNode;
 }
 
 /**
- * Genesis viva: envolve a flor com duas camadas de partículas (atrás e à frente).
- * Sem JavaScript, as camadas ficam vazias e a Home permanece intacta.
+ * Genesis viva: uma camada de partículas sobre a flor, recortada pela silhueta
+ * da Genesis — visualmente, todas as partículas ficam atrás dela.
+ * Sem JavaScript, a camada fica vazia e a Home permanece intacta.
  */
-export function GenesisField({ children }: GenesisFieldProps) {
-  const backRef = useRef<HTMLCanvasElement>(null);
-  const frontRef = useRef<HTMLCanvasElement>(null);
+export function GenesisField({ maskSrc, children }: GenesisFieldProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const back = backRef.current;
-    const front = frontRef.current;
-    const figure = back?.parentElement?.querySelector<HTMLElement>("figure");
+    const canvas = canvasRef.current;
+    const figure = canvas?.parentElement?.querySelector<HTMLElement>("figure");
     const image = figure?.querySelector<HTMLImageElement>("[data-bloom-image]");
-    if (!back || !front || !figure || !image) return;
+    if (!canvas || !figure || !image) return;
 
     let controller: { dispose(): void } | null = null;
     const begin = () => {
       controller = runField({
-        back,
-        front,
+        canvas,
+        maskSrc,
         figure,
         image,
         waitForBloom: document.documentElement.getAttribute("data-bloom") === "play",
@@ -42,13 +43,12 @@ export function GenesisField({ children }: GenesisFieldProps) {
       image.removeEventListener("load", begin);
       controller?.dispose();
     };
-  }, []);
+  }, [maskSrc]);
 
   return (
     <>
-      <canvas ref={backRef} className={`${styles.layer} ${styles.back}`} aria-hidden="true" />
       {children}
-      <canvas ref={frontRef} className={`${styles.layer} ${styles.front}`} aria-hidden="true" />
+      <canvas ref={canvasRef} className={styles.layer} aria-hidden="true" />
     </>
   );
 }

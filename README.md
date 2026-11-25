@@ -57,8 +57,10 @@ Em `src/config/evolution.ts`, altere `ACTIVE_PHASE_ID` para `"metamorphosis"`.
 ### Genesis viva (Fase 03)
 
 - **Partículas permanentes** (`src/animations/field.ts`, `src/components/particles/GenesisField.tsx`):
-  duas camadas Canvas 2D — atrás e à frente da fotografia — com órbitas elípticas inclinadas, ondulação
-  orgânica, cintilação lenta e profundidade contínua. Surgem nos momentos finais do florescimento.
+  uma camada Canvas 2D sobre a fotografia, recortada a cada quadro pela máscara de oclusão
+  `public/flowers/genesis-mask.png` (silhueta de pétalas, caule e estames gerada a partir de
+  `genesis.webp`) — todas as partículas e halos ficam atrás da flor. Órbitas elípticas inclinadas,
+  ondulação orgânica, cintilação lenta e profundidade contínua. Surgem após o fim do florescimento.
 - **Parallax** em três profundidades (partículas distantes, flor, partículas próximas), com interpolação
   exponencial e limite circular. O cabeçalho é estático.
 - **Gravidade secreta**: pressionar e segurar a flor (mouse ou toque) atrai as partículas para o coração

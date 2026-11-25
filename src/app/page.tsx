@@ -13,9 +13,13 @@ export default function HomePage() {
       <SiteHeader current={routes.home} />
       <main className={styles.stage}>
         <h1 className="visually-hidden">{site.name}</h1>
-        <GenesisField>
+        {phase.flower.mask ? (
+          <GenesisField maskSrc={phase.flower.mask.src}>
+            <Flower flower={phase.flower} bloom={phase.animations.bloom.enabled} />
+          </GenesisField>
+        ) : (
           <Flower flower={phase.flower} bloom={phase.animations.bloom.enabled} />
-        </GenesisField>
+        )}
       </main>
     </>
   );

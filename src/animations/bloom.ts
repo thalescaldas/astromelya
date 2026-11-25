@@ -43,7 +43,10 @@ export function runBloom(options: BloomOptions): BloomController {
   let done = false;
   let settlingSent = false;
 
-  /** Avisa o campo de partículas: a flor está assentando (partículas podem surgir). */
+  /**
+   * Avisa o campo de partículas que a flor está assentada (vídeo já igual à
+   * fotografia): só então elas surgem, sem nunca cruzar pétalas em movimento.
+   */
   const announceSettling = () => {
     if (settlingSent) return;
     settlingSent = true;
@@ -131,8 +134,6 @@ export function runBloom(options: BloomOptions): BloomController {
     if (!element) return;
     const duration = Number.isFinite(element.duration) ? element.duration : 0;
     const holdStart = duration - options.hold;
-    // Partículas surgem nos momentos finais do florescimento (início do morph final).
-    if (duration && element.currentTime >= holdStart - 1.25) announceSettling();
     if (duration && element.currentTime >= holdStart) {
       settle(0);
       const x = Math.min(1, (element.currentTime - holdStart) / (options.hold * 0.9));

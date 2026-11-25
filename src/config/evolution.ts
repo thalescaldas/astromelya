@@ -32,6 +32,11 @@ export interface FlowerAsset {
    * enquadramento, escala e luminância da imagem oficial.
    */
   growth?: { src: string };
+  /**
+   * Máscara de oclusão (opcional): silhueta da flor gerada a partir da
+   * fotografia oficial, mesma geometria. Mantém as partículas atrás da flor.
+   */
+  mask?: { src: string };
 }
 
 export interface ParticlesConfig {
@@ -110,6 +115,7 @@ export const phases: Record<PhaseId, EvolutionPhase> = {
       alt: "Flor Genesis em preto e branco sobre fundo escuro",
       focal: { x: 0.484, y: 0.5 },
       growth: { src: "/flowers/genesis-growth.mp4" },
+      mask: { src: "/flowers/genesis-mask.png" },
     },
     particles: disabledParticles,
     animations: {

@@ -3,9 +3,11 @@ import { FIELD } from "@/config/field";
 /**
  * Genesis viva
  * ------------
- * Campo de partículas em duas camadas Canvas 2D (atrás e à frente da fotografia),
- * parallax em três profundidades e um campo gravitacional secreto ao pressionar
- * a flor. Um único ciclo requestAnimationFrame; nenhum estado React por quadro.
+ * Campo de partículas em uma camada Canvas 2D desenhada sobre a fotografia e
+ * recortada por uma máscara de oclusão da silhueta da Genesis: todas as
+ * partículas (e seus halos) ficam atrás da flor. Parallax em três
+ * profundidades e um campo gravitacional secreto ao pressionar a flor.
+ * Um único ciclo requestAnimationFrame; nenhum estado React por quadro.
  *
  * Física: cada partícula tem uma órbita "natural" (elipse inclinada com ondulação
  * orgânica). A posição real segue essa órbita por uma mola criticamente amortecida;
@@ -15,8 +17,9 @@ import { FIELD } from "@/config/field";
  */
 
 export interface FieldElements {
-  back: HTMLCanvasElement;
-  front: HTMLCanvasElement;
+  canvas: HTMLCanvasElement;
+  /** Silhueta da flor (alfa), mesma geometria da fotografia. */
+  maskSrc: string;
   /** Figura da flor (recebe o parallax intermediário). */
   figure: HTMLElement;
   /** Fotografia oficial (referência de posição e escala). */
@@ -113,10 +116,14 @@ function createParticle(): Particle {
 }
 
 export function runField(options: FieldOptions): FieldController {
-  const { back, front, figure, image, reducedMotion } = options;
-  const backCtx = back.getContext("2d");
-  const frontCtx = front.getContext("2d");
-  if (!backCtx || !frontCtx) return { dispose() {} };
+  const { canvas, figure, image, reducedMotion } = options;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return { dispose() {} };
+
+  // Máscara de oclusão: carregada uma vez, reescalada só em resize.
+  const maskImage = new Image();
+  const maskCanvas = document.createElement("canvas");
+  let maskReady = false;
 
   const sprite = createSprite();
   const viewportCount = window.innerWidth < P.mobileBreakpoint ? P.mobile : P.desktop;
@@ -130,6 +137,9 @@ export function runField(options: FieldOptions): FieldController {
   let cx = 0;
   let cy = 0;
   let w = 1;
+  let imgLeft = 0;
+  let imgTop = 0;
+  let imgHeight = 0;
 
   // Interação
   let pointerX = 0;
@@ -156,16 +166,31 @@ export function runField(options: FieldOptions): FieldController {
     vw = window.innerWidth;
     vh = window.innerHeight;
     dpr = Math.min(window.devicePixelRatio || 1, FIELD.performance.maxPixelRatio);
-    for (const canvas of [back, front]) {
-      canvas.width = Math.round(vw * dpr);
-      canvas.height = Math.round(vh * dpr);
-    }
+    canvas.width = Math.round(vw * dpr);
+    canvas.height = Math.round(vh * dpr);
     // A figura pode estar deslocada pelo parallax: desconta o deslocamento atual.
     const rect = image.getBoundingClientRect();
     w = rect.width || vw;
-    cx = rect.left - flowerX + FIELD.center.x * rect.width;
-    cy = rect.top - flowerY + FIELD.center.y * rect.height;
+    imgLeft = rect.left - flowerX;
+    imgTop = rect.top - flowerY;
+    imgHeight = rect.height;
+    cx = imgLeft + FIELD.center.x * rect.width;
+    cy = imgTop + FIELD.center.y * rect.height;
+    prepareMask();
   };
+
+  /** Reescala a máscara para a resolução exata da tela (cópia 1:1 por quadro). */
+  function prepareMask() {
+    if (!maskImage.naturalWidth) return;
+    maskCanvas.width = Math.max(1, Math.round(w * dpr));
+    maskCanvas.height = Math.max(1, Math.round(imgHeight * dpr));
+    const mctx = maskCanvas.getContext("2d");
+    if (!mctx) return;
+    mctx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
+    mctx.imageSmoothingQuality = "high";
+    mctx.drawImage(maskImage, 0, 0, maskCanvas.width, maskCanvas.height);
+    maskReady = true;
+  }
 
   /** Órbita natural de uma partícula no instante t (px CSS, relativo ao centro). */
   const orbit = (p: Particle, t: number) => {
@@ -233,21 +258,18 @@ export function runField(options: FieldOptions): FieldController {
 
   const draw = (g: number) => {
     const PX = FIELD.parallax;
-    backCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    frontCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    backCtx.clearRect(0, 0, vw, vh);
-    frontCtx.clearRect(0, 0, vw, vh);
-    backCtx.globalCompositeOperation = "lighter";
-    frontCtx.globalCompositeOperation = "lighter";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, vw, vh);
+    // Sem máscara, nenhuma partícula é desenhada (nunca sobre a flor).
+    if (!maskReady) return;
+    ctx.globalCompositeOperation = "lighter";
 
     for (let i = 0; i < active; i++) {
       const p = particles[i];
       const appear = smooth((clock - emergeAt - p.delay) / FIELD.emergence.duration);
       if (appear <= 0) continue;
-      // profundidade 0 (fundo) … 1 (frente); sob gravidade, todos convergem ao plano da flor
+      // profundidade 0 (distante) … 1 (próxima): define tamanho, brilho e parallax
       const depth = (p.z + 1) / 2;
-      const nearLayer = p.z > 0;
-      const ctx = nearLayer ? frontCtx : backCtx;
       // Parallax contínuo pela profundidade: fundo (far) → plano da flor → frente (near).
       const parallax =
         depth < 0.5
@@ -267,8 +289,14 @@ export function runField(options: FieldOptions): FieldController {
       ctx.globalAlpha = Math.min(1, P.alpha.core * intensity);
       ctx.drawImage(sprite, sx - core, sy - core, core * 2, core * 2);
     }
-    backCtx.globalAlpha = 1;
-    frontCtx.globalAlpha = 1;
+    ctx.globalAlpha = 1;
+
+    // Oclusão: apaga tudo o que cai sobre a silhueta (partículas e halos),
+    // na posição exata da flor com o parallax deste quadro.
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(maskCanvas, (imgLeft + flowerX) * dpr, (imgTop + flowerY) * dpr);
+    ctx.globalCompositeOperation = "source-over";
   };
 
   const applyFlowerParallax = () => {
@@ -370,11 +398,17 @@ export function runField(options: FieldOptions): FieldController {
   measure();
   placeAll(0);
 
+  maskImage.decoding = "async";
+  maskImage.onload = () => {
+    prepareMask();
+    if (reducedMotion) draw(0);
+  };
+  maskImage.src = options.maskSrc;
+
   if (reducedMotion) {
     // Movimento reduzido: um único quadro estático, sem parallax nem gravidade.
     emergeAt = -100;
     clock = 0;
-    draw(0);
   } else {
     window.addEventListener("pointermove", onPointerMove, { passive: true });
     window.addEventListener("pointerdown", onPointerDown);
@@ -399,10 +433,11 @@ export function runField(options: FieldOptions): FieldController {
       window.removeEventListener("resize", onResize);
       document.removeEventListener("visibilitychange", onVisibility);
       figure.style.transform = "";
-      for (const canvas of [back, front]) {
-        canvas.width = 0;
-        canvas.height = 0;
-      }
+      maskImage.onload = null;
+      canvas.width = 0;
+      canvas.height = 0;
+      maskCanvas.width = 0;
+      maskCanvas.height = 0;
     },
   };
 }
