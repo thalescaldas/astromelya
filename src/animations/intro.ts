@@ -8,7 +8,7 @@ import { INTRO_TIMINGS as T } from "./introTimings";
 gsap.registerPlugin(CustomEase);
 
 /**
- * Introdução da Astromelya — um único fenômeno contínuo (6,5 s).
+ * Introdução da Astromelya — um único fenômeno contínuo (8 s).
  *
  * Uma linha do tempo principal avança um relógio. Esse relógio conduz, no
  * mesmo shader, o nome, a matéria que dele se desprende e o símbolo que se

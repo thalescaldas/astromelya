@@ -90,6 +90,7 @@ export class IntroScene {
       uSize: { value: vw < 768 ? 1.5 : 1.7 },
       uPixelRatio: { value: pixelRatio },
       uScatter: { value: Math.min(vw, vh) * 0.06 },
+      uCdf: { value: Array.from({ length: 17 }, (_, i) => i / 16) },
     };
 
     this.addWordmark(wordmark);
@@ -178,7 +179,18 @@ export class IntroScene {
       birthKey[i] = 0.6 * edge + 0.4 * trigNoise(fx * 0.02, fy * 0.02);
       const tx = to[i * 2];
       const ty = to[i * 2 + 1];
-      arriveKey[i] = 0.8 * (Math.hypot(tx, ty) / symbolRadius) + 0.2 * trigNoise(tx * 0.06, ty * 0.06);
+      arriveKey[i] = Math.min(1, Math.max(0, 0.8 * (Math.hypot(tx, ty) / symbolRadius) + 0.2 * trigNoise(tx * 0.06, ty * 0.06)));
+    }
+
+    // Distribuição acumulada da ordem de formação: o shader a usa para que a
+    // condensação avance em ritmo constante durante toda a janela.
+    const sortedKeys = Array.from(arriveKey).sort((a, b) => a - b);
+    const cdf = this.uniforms.uCdf.value;
+    let cursor = 0;
+    for (let k = 0; k <= 16; k++) {
+      const threshold = k / 16;
+      while (cursor < count && sortedKeys[cursor] <= threshold) cursor++;
+      cdf[k] = cursor / count;
     }
     const byBirth = Array.from({ length: count }, (_, i) => i).sort((a, b) => birthKey[a] - birthKey[b]);
     const byArrive = Array.from({ length: count }, (_, i) => i).sort((a, b) => arriveKey[a] - arriveKey[b]);

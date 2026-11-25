@@ -9,13 +9,13 @@
  * etapa "termina" e outra "começa".
  *
  *   0.00 ── revelação ── 0.80
- *     0.35 ──────────── deformação + atração gravitacional (lenta) ──────────── 3.20
- *                    1.70 ──────────── dissolução em partículas ──────────── 3.50
- *                                                3.20 ──── condensação no símbolo ──── 4.20
- *                                                                4.20 ──── contemplação ──── 5.40
- *                                                                          5.40 ── o símbolo se desfaz ── 6.10
- *                                                                             5.65 ────── flor ────── 6.50
- *                                                                              5.70 ── cabeçalho + Projetos ── 6.40
+ *     0.35 ──────── deformação + atração gravitacional (lenta) ──────── 3.20
+ *                  1.70 ──────── dissolução em partículas ──────── 3.50
+ *                                   3.20 ─────────── condensação gradual (partículas flutuando) ─────────── 5.70
+ *                                                                              5.70 ──── contemplação ──── 6.90
+ *                                                                                        6.90 ── o símbolo se desfaz ── 7.60
+ *                                                                                           7.15 ────── flor ────── 8.00
+ *                                                                                            7.20 ── cabeçalho + Projetos ── 7.90
  *
  * O símbolo não se desloca: desaparece no centro enquanto o símbolo oficial
  * se materializa no cabeçalho, junto com a flor e o botão Projetos.
@@ -28,22 +28,22 @@ export const INTRO_TIMINGS = {
   DISSOLVE_START: 1.7,
   DISSOLVE_SPAN: 1.8,
   BIRTH_FADE: 0.18,
-  /** Viagem mínima de uma partícula; garante que os últimos traços cheguem até ~4,2 s. */
-  MIN_TRAVEL: 0.55,
-  /** Condensação: o centro do símbolo se forma primeiro, as pontas por último. */
-  SOLID_START: 3.15,
-  SOLID_SPAN: 0.78,
-  CONDENSE_IN: 0.03,
-  CONDENSE_OUT: 0.27,
-  /** Contemplação: 4,2 s → 5,4 s, símbolo completo, nítido e estável. */
-  SYMBOL_FADE_START: 5.4,
-  SYMBOL_FADE_END: 6.1,
+  /** Viagem mínima de uma partícula: nenhuma é "sugada" em menos de 1,6 s. */
+  MIN_TRAVEL: 1.6,
+  /** Condensação gradual: o centro do símbolo se forma primeiro, as pontas por último. */
+  SOLID_START: 3.35,
+  SOLID_SPAN: 1.95,
+  CONDENSE_IN: 0.05,
+  CONDENSE_OUT: 0.45,
+  /** Contemplação: 5,7 s → 6,9 s, símbolo completo, nítido e estável. */
+  SYMBOL_FADE_START: 6.9,
+  SYMBOL_FADE_END: 7.6,
   /** Símbolo do cabeçalho e botão Projetos surgem juntos. */
-  CHROME_START: 5.7,
+  CHROME_START: 7.2,
   CHROME_DURATION: 0.7,
-  FLOWER_START: 5.65,
+  FLOWER_START: 7.15,
   FLOWER_DURATION: 0.85,
-  TOTAL: 6.5,
+  TOTAL: 8.0,
   /** Janela usada para medir o desempenho antes de as partículas surgirem. */
   ADAPT_AT: 1.2,
 } as const;

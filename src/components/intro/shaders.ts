@@ -32,6 +32,8 @@ uniform float uClock;
 uniform float uWordHalf;
 uniform float uWordAmp;
 uniform float uSymbolRadius;
+/* Distribuição acumulada da ordem de formação (17 pontos, 0..1). */
+uniform float uCdf[17];
 
 float hash12(vec2 p) {
   vec3 p3 = fract(vec3(p.xyx) * 0.1031);
@@ -95,10 +97,21 @@ float birthTime(vec2 p) {
   return DISSOLVE_START + b * DISSOLVE_SPAN;
 }
 
+/* Converte a ordem bruta em quantil: a condensação se distribui por igual no tempo. */
+float formationQuantile(float o) {
+  float x = clamp(o, 0.0, 1.0) * 16.0;
+  float q = 1.0;
+  for (int i = 0; i < 16; i++) {
+    float fi = float(i);
+    if (x >= fi && x <= fi + 1.0) q = mix(uCdf[i], uCdf[i + 1], x - fi);
+  }
+  return q;
+}
+
 /* Instante em que cada ponto do símbolo se condensa (do centro para fora). */
 float arriveTime(vec2 p) {
   float o = clamp(0.8 * length(p) / uSymbolRadius + 0.2 * trigNoise(p * 0.06), 0.0, 1.0);
-  return SOLID_START + o * SOLID_SPAN;
+  return SOLID_START + formationQuantile(o) * SOLID_SPAN;
 }
 
 /* Desaparecimento do símbolo no centro (0 → 1), suave nas duas pontas. */
@@ -190,7 +203,9 @@ void main() {
   vec2 start = aFrom + field(aFrom);
 
   float s = window01(uClock, birth, arrive);
-  float e = smoother(s);
+  // Aproximação radial flutuante: senoide (pico de velocidade ~1,57× a média,
+  // contra 1,875× da curva anterior) — sem sucção abrupta, partida e chegada suaves.
+  float e = 0.5 - 0.5 * cos(3.14159265 * s);
   float bell = 16.0 * s * s * (1.0 - s) * (1.0 - s);
 
   vec2 pos = mix(start, target, e);
@@ -200,8 +215,8 @@ void main() {
   float theta = (0.45 + 0.6 * aSeed.z) * bell;
   float cs = cos(theta);
   float sn = sin(theta);
-  rel = mat2(cs, sn, -sn, cs) * rel * (1.0 - 0.2 * bell);
-  pos = rel + vnoise2(aFrom * 0.05 + uClock * 0.6) * uScatter * (0.3 + aSeed.x) * bell;
+  rel = mat2(cs, sn, -sn, cs) * rel * (1.0 - 0.1 * bell);
+  pos = rel + vnoise2(aFrom * 0.05 + uClock * 0.35) * uScatter * (0.3 + aSeed.x) * bell;
 
   float fade = symbolFade();
   float born = smoothstep(birth, birth + BIRTH_FADE, uClock);
