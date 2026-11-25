@@ -38,7 +38,7 @@ export interface ParticlesConfig {
 
 export interface AnimationConfig {
   /**
-   * Introdução (~4,3 s): nome → deformação gravitacional → partículas → símbolo.
+   * Introdução (~4,7 s): nome → deformação gravitacional → partículas → símbolo.
    * `oncePerSession` evita repetir a introdução na mesma sessão do navegador
    * (adicione `?intro` à URL para assistir novamente).
    */
@@ -71,7 +71,7 @@ const FLOWER_WIDTH = 1672;
 const FLOWER_HEIGHT = 941;
 
 const disabledAnimations: AnimationConfig = {
-  intro: { enabled: false, durationMs: 4300, oncePerSession: true },
+  intro: { enabled: false, durationMs: 4700, oncePerSession: true },
   parallax: { enabled: false, intensity: 0 },
   distortion: { enabled: false, strength: 0 },
   easterEgg: { enabled: false },
@@ -101,7 +101,7 @@ export const phases: Record<PhaseId, EvolutionPhase> = {
     particles: disabledParticles,
     animations: {
       ...disabledAnimations,
-      intro: { enabled: true, durationMs: 4300, oncePerSession: true },
+      intro: { enabled: true, durationMs: 4700, oncePerSession: true },
     },
     audio: disabledAudio,
   },

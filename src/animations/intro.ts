@@ -1,21 +1,21 @@
 import gsap from "gsap";
 import { CustomEase } from "gsap/CustomEase";
-import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import type { IntroScene } from "@/components/intro/IntroScene";
 import { loadImage, rasterize } from "@/components/particles/raster";
 import { INTRO_STORAGE_KEY } from "./introBoot";
 import { INTRO_BASE_DURATION, INTRO_TIMINGS as T } from "./introTimings";
 
-gsap.registerPlugin(CustomEase, MotionPathPlugin);
+gsap.registerPlugin(CustomEase);
 
 /**
- * Introdução da Astromelya — um único fenômeno contínuo (~4,3 s).
+ * Introdução da Astromelya — um único fenômeno contínuo (~4,7 s).
  *
  * Uma linha do tempo principal avança um relógio. Esse relógio conduz, no
  * mesmo shader, o nome, a matéria que dele se desprende e o símbolo que se
  * condensa: cada traço se apaga no instante exato em que sua partícula nasce,
- * no mesmo lugar e sob o mesmo campo gravitacional; cada partícula pousa no
- * símbolo enquanto ele já migra, por uma curva Bézier, rumo ao cabeçalho.
+ * no mesmo lugar e sob o mesmo campo gravitacional. Formado, o símbolo se
+ * desfaz no centro enquanto o símbolo oficial se materializa no cabeçalho,
+ * junto com a flor e o botão Projetos — sem nenhum deslocamento entre os dois.
  * Ver `introTimings.ts` para o mapa de sobreposições.
  *
  * Qualquer clique, toque ou tecla acelera a introdução até o fim.
@@ -23,8 +23,8 @@ gsap.registerPlugin(CustomEase, MotionPathPlugin);
 
 /** Chegada longa e macia, sem rebote (flor e fallback). */
 const settleEase = CustomEase.create("astro-settle", "M0,0 C0.2,0.06 0.24,1 1,1");
-/** Equivalente da curva de migração do shader, para o fallback sem WebGL. */
-const flightEase = CustomEase.create("astro-flight", "M0,0 C0.34,0 0.22,1 1,1");
+/** Materialização: começa quase imperceptível e assenta devagar. */
+const materializeEase = CustomEase.create("astro-materialize", "M0,0 C0.4,0 0.3,1 1,1");
 
 const ASSET_TIMEOUT_MS = 2500;
 const WORDMARK_RATIO = 41 / 491;
@@ -144,32 +144,19 @@ export function runIntro(options: IntroOptions): IntroController {
   };
 
   const start = async () => {
-    // Única leitura de layout: viewport e símbolo definitivo do cabeçalho.
+    // Única leitura de layout: a viewport.
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     startWidth = vw;
     const flower = document.querySelector<HTMLElement>('[data-intro-hide="flower"]');
     const nav = document.querySelector<HTMLElement>('[data-intro-hide="nav"]');
     const anchor = document.querySelector<HTMLElement>('[data-intro-hide="symbol"]');
-    const anchorRect = anchor?.getBoundingClientRect();
-    const anchorOpacity = anchor?.parentElement
-      ? Number.parseFloat(getComputedStyle(anchor.parentElement).opacity) || 1
-      : 1;
 
     // Mesmas dimensões do CSS do fallback (Intro.module.css).
     const wordW = clamp(240, 608, vw * 0.58);
     const wordH = wordW * WORDMARK_RATIO;
     const symW = clamp(72, 132, vw * 0.11);
     const symH = symW * SYMBOL_RATIO;
-    const target = anchorRect
-      ? {
-          x: anchorRect.left + anchorRect.width / 2 - vw / 2,
-          y: vh / 2 - (anchorRect.top + anchorRect.height / 2),
-          width: anchorRect.width,
-          height: anchorRect.height,
-        }
-      : { x: 0, y: 0, width: symW, height: symH };
-
     const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
 
     // WebGL: carrega cena e SVGs em paralelo.
@@ -195,10 +182,7 @@ export function runIntro(options: IntroOptions): IntroController {
           viewport: { width: vw, height: vh },
           pixelRatio,
           wordmark: rasterize(wordImage, wordW, wordH, pixelRatio),
-          symbolLarge: rasterize(symbolImage, symW, symH, pixelRatio),
-          symbolSmall: rasterize(symbolImage, target.width, target.height, pixelRatio),
-          anchor: { x: target.x, y: target.y, width: target.width },
-          anchorOpacity,
+          symbol: rasterize(symbolImage, symW, symH, pixelRatio),
           particleCount: particleBudget(vw),
         });
         scene.render(0);
@@ -219,7 +203,7 @@ export function runIntro(options: IntroOptions): IntroController {
         tl.to(clock, { value: T.TOTAL, duration: T.TOTAL, ease: "none" }, 0);
         gsap.ticker.add(render);
       } else {
-        buildFallback(tl, { wordmark, symbol, vw, vh, target, symW, symH });
+        buildFallback(tl, wordmark, symbol);
       }
 
       if (flower) {
@@ -230,16 +214,14 @@ export function runIntro(options: IntroOptions): IntroController {
           T.FLOWER_START,
         );
       }
-      if (nav) {
-        tl.fromTo(nav, { autoAlpha: 0 }, { autoAlpha: 1, duration: T.NAV_DURATION, ease: "sine.inOut" }, T.NAV_START);
-      }
-      if (anchor) {
-        // O shader compensa esta entrada: a cobertura total permanece constante.
+      // Símbolo oficial e botão Projetos se materializam juntos, já no lugar.
+      const chrome = [anchor, nav].filter((el): el is HTMLElement => Boolean(el));
+      if (chrome.length) {
         tl.fromTo(
-          anchor,
+          chrome,
           { autoAlpha: 0 },
-          { autoAlpha: 1, duration: T.HANDOFF_END - T.HANDOFF_START, ease: "none" },
-          T.HANDOFF_START,
+          { autoAlpha: 1, duration: T.CHROME_DURATION, ease: materializeEase },
+          T.CHROME_START,
         );
       }
       tl.set({}, {}, T.TOTAL);
@@ -263,56 +245,24 @@ export function runIntro(options: IntroOptions): IntroController {
   };
 }
 
-interface FallbackParams {
-  wordmark: HTMLImageElement;
-  symbol: HTMLImageElement;
-  vw: number;
-  vh: number;
-  target: { x: number; y: number; width: number; height: number };
-  symW: number;
-  symH: number;
-}
-
-/** Sem WebGL: mesma coreografia com os SVGs no DOM e trajetória Bézier. */
-function buildFallback(tl: gsap.core.Timeline, p: FallbackParams) {
-  const dx = p.target.x;
-  const dy = -p.target.y; // DOM: y para baixo
-  const length = Math.hypot(dx, dy) || 1;
-  let px = -dy / length;
-  let py = dx / length;
-  if (py > 0) {
-    px = -px;
-    py = -py;
-  }
-  const path = [
-    { x: 0, y: 0 },
-    { x: dx * 0.28 + px * length * 0.16, y: dy * 0.28 + py * length * 0.16 },
-    { x: dx * 0.74 + px * length * 0.07, y: dy * 0.74 + py * length * 0.07 },
-    { x: dx, y: dy },
-  ];
-
-  tl.fromTo(p.wordmark, { autoAlpha: 0, scale: 0.985 }, { autoAlpha: 1, scale: 1, duration: T.REVEAL_END, ease: "sine.out" }, 0)
+/** Sem WebGL: mesma coreografia com os SVGs oficiais no DOM. */
+function buildFallback(tl: gsap.core.Timeline, wordmark: HTMLImageElement, symbol: HTMLImageElement) {
+  tl.fromTo(wordmark, { autoAlpha: 0, scale: 0.985 }, { autoAlpha: 1, scale: 1, duration: T.REVEAL_END, ease: "sine.out" }, 0)
     .to(
-      p.wordmark,
+      wordmark,
       { scaleX: 0.86, scaleY: 1.045, duration: T.DEFORM_END - T.DEFORM_START, ease: "power2.in" },
       T.DEFORM_START,
     )
-    .to(p.wordmark, { autoAlpha: 0, duration: T.DISSOLVE_SPAN, ease: "sine.in" }, T.DISSOLVE_START)
+    .to(wordmark, { autoAlpha: 0, duration: T.DISSOLVE_SPAN, ease: "sine.in" }, T.DISSOLVE_START)
     .fromTo(
-      p.symbol,
+      symbol,
       { autoAlpha: 0, scale: 1.06 },
       { autoAlpha: 1, scale: 1, duration: T.SOLID_SPAN + 0.3, ease: settleEase },
       T.SOLID_START - 0.3,
     )
     .to(
-      p.symbol,
-      {
-        motionPath: { path, type: "cubic" },
-        scale: p.target.width / p.symW,
-        duration: T.FLIGHT_END - T.FLIGHT_START,
-        ease: flightEase,
-      },
-      T.FLIGHT_START,
-    )
-    .set(p.symbol, { autoAlpha: 0 }, T.HANDOFF_END);
+      symbol,
+      { autoAlpha: 0, duration: T.SYMBOL_FADE_END - T.SYMBOL_FADE_START, ease: "sine.inOut" },
+      T.SYMBOL_FADE_START,
+    );
 }

@@ -20,10 +20,8 @@ const defines = /* glsl */ `
 #define SOLID_SPAN ${f(T.SOLID_SPAN)}
 #define CONDENSE_IN ${f(T.CONDENSE_IN)}
 #define CONDENSE_OUT ${f(T.CONDENSE_OUT)}
-#define FLIGHT_START ${f(T.FLIGHT_START)}
-#define FLIGHT_END ${f(T.FLIGHT_END)}
-#define HANDOFF_START ${f(T.HANDOFF_START)}
-#define HANDOFF_END ${f(T.HANDOFF_END)}
+#define SYMBOL_FADE_START ${f(T.SYMBOL_FADE_START)}
+#define SYMBOL_FADE_END ${f(T.SYMBOL_FADE_END)}
 #define GRAVITY vec2(0.14, 0.045)
 #define RESIDUAL_RATIO 0.2
 `;
@@ -34,11 +32,6 @@ uniform float uClock;
 uniform float uWordHalf;
 uniform float uWordAmp;
 uniform float uSymbolRadius;
-uniform vec2 uP0;
-uniform vec2 uP1;
-uniform vec2 uP2;
-uniform vec2 uP3;
-uniform float uScaleEnd;
 
 float hash12(vec2 p) {
   vec3 p3 = fract(vec3(p.xyx) * 0.1031);
@@ -108,19 +101,9 @@ float arriveTime(vec2 p) {
   return SOLID_START + o * SOLID_SPAN;
 }
 
-/* Curva de migração: partida e chegada com velocidade nula, chegada longa. */
-float flightProgress(float lag) {
-  float x = window01(uClock - lag, FLIGHT_START, FLIGHT_END);
-  return smoother(pow(x, 0.82));
-}
-
-vec2 bezier(float t) {
-  float u = 1.0 - t;
-  return u * u * u * uP0 + 3.0 * u * u * t * uP1 + 3.0 * u * t * t * uP2 + t * t * t * uP3;
-}
-
-float flightScale(float t) {
-  return mix(1.0, uScaleEnd, t);
+/* Desaparecimento do símbolo no centro (0 → 1), suave nas duas pontas. */
+float symbolFade() {
+  return smoother(window01(uClock, SYMBOL_FADE_START, SYMBOL_FADE_END));
 }
 `;
 
@@ -164,31 +147,23 @@ ${common}
 varying vec2 vLocal;
 void main() {
   vLocal = position.xy;
-  float t = flightProgress(0.0);
-  vec2 world = bezier(t) + position.xy * flightScale(t);
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(world, 0.0, 1.0);
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position.xy, 0.0, 1.0);
 }
 `;
 
 export const symbolFragment = /* glsl */ `
 ${common}
-uniform sampler2D uMapLarge;
-uniform sampler2D uMapSmall;
+uniform sampler2D uMap;
 uniform vec2 uSize;
-uniform float uOpacityEnd;
 varying vec2 vLocal;
 void main() {
   vec2 uv = vLocal / uSize + 0.5;
-  float t = flightProgress(0.0);
-  float tex = mix(texture2D(uMapLarge, uv).a, texture2D(uMapSmall, uv).a, smoothstep(0.55, 1.0, t));
+  float tex = texture2D(uMap, uv).a;
   float arrive = arriveTime(vLocal);
   float solid = smoothstep(arrive + CONDENSE_IN, arrive + CONDENSE_OUT, uClock);
-  float a = tex * solid * mix(1.0, uOpacityEnd, t);
-  // Troca pelo símbolo do header: mantém a cobertura composta constante.
-  float h = window01(uClock, HANDOFF_START, HANDOFF_END);
-  float q = a * (1.0 - h) / max(1.0 - a * h, 0.0001);
-  if (q < 0.002) discard;
-  gl_FragColor = vec4(vec3(1.0), q);
+  float a = tex * solid * (1.0 - symbolFade());
+  if (a < 0.002) discard;
+  gl_FragColor = vec4(vec3(1.0), a);
 }
 `;
 
@@ -209,11 +184,7 @@ void main() {
   float birth = birthTime(aFrom);
   float arrive = max(arriveTime(aTo), birth + MIN_TRAVEL);
 
-  // Residuais seguem a migração com atraso e se dissipam aos poucos.
-  float lag = residual ? 0.05 + 0.22 * aSeed.x : 0.0;
-  float t = flightProgress(lag);
-  vec2 center = bezier(t);
-  vec2 target = center + aTo * flightScale(t);
+  vec2 target = aTo;
 
   // Partida exatamente onde o traço deformado estava.
   vec2 start = aFrom + field(aFrom);
@@ -224,22 +195,23 @@ void main() {
 
   vec2 pos = mix(start, target, e);
 
-  // Vórtice gravitacional em torno do centro de massa em movimento.
-  vec2 rel = pos - center;
+  // Vórtice gravitacional em torno do centro.
+  vec2 rel = pos;
   float theta = (0.45 + 0.6 * aSeed.z) * bell;
   float cs = cos(theta);
   float sn = sin(theta);
   rel = mat2(cs, sn, -sn, cs) * rel * (1.0 - 0.2 * bell);
-  pos = center + rel + vnoise2(aFrom * 0.05 + uClock * 0.6) * uScatter * (0.3 + aSeed.x) * bell;
+  pos = rel + vnoise2(aFrom * 0.05 + uClock * 0.6) * uScatter * (0.3 + aSeed.x) * bell;
 
-  float flight = window01(uClock, FLIGHT_START, FLIGHT_END);
+  float fade = symbolFade();
   float born = smoothstep(birth, birth + BIRTH_FADE, uClock);
   float condense = 0.0;
   float dissipate = 0.0;
   if (residual) {
     float drift = smoothstep(arrive - 0.2, arrive + 0.4, uClock);
-    pos += vnoise2(aTo * 0.08 + aSeed.xy * 10.0 + uClock * 0.7) * (1.5 + 16.0 * flight) * drift;
-    dissipate = smoothstep(0.2, 1.0, flight);
+    // Residuais pairam junto ao símbolo e se desfazem com ele, sem rastro.
+    pos += vnoise2(aTo * 0.08 + aSeed.xy * 10.0 + uClock * 0.7) * (1.5 + 6.0 * fade) * drift;
+    dissipate = smoothstep(0.0, 0.85, fade);
   } else {
     condense = smoothstep(arrive + CONDENSE_IN, arrive + CONDENSE_OUT, uClock);
   }
@@ -249,7 +221,7 @@ void main() {
   gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 0.0, 1.0);
   gl_PointSize = vAlpha < 0.003
     ? 0.0
-    : uSize * uPixelRatio * (0.8 + 0.4 * aSeed.y) * (1.0 + 0.35 * bell) * mix(1.0, 0.85, t);
+    : uSize * uPixelRatio * (0.8 + 0.4 * aSeed.y) * (1.0 + 0.35 * bell);
 }
 `;
 

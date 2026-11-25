@@ -3,7 +3,6 @@ import {
   BufferGeometry,
   CanvasTexture,
   LinearFilter,
-  LinearMipmapLinearFilter,
   Mesh,
   NormalBlending,
   AdditiveBlending,
@@ -29,7 +28,8 @@ import {
 /**
  * Cena única da introdução: nome, partículas e símbolo vivem no mesmo
  * espaço (pixels CSS, origem no centro da viewport, y para cima) e são
- * conduzidos por um único uniforme de relógio.
+ * conduzidos por um único uniforme de relógio. O símbolo se forma e se
+ * desfaz no centro; o símbolo definitivo surge no cabeçalho (DOM).
  */
 
 export interface IntroSceneParams {
@@ -37,12 +37,7 @@ export interface IntroSceneParams {
   viewport: { width: number; height: number };
   pixelRatio: number;
   wordmark: Raster;
-  symbolLarge: Raster;
-  symbolSmall: Raster;
-  /** Centro e largura do símbolo definitivo no cabeçalho (mundo). */
-  anchor: { x: number; y: number; width: number };
-  /** Opacidade final do símbolo no cabeçalho (estilo do link). */
-  anchorOpacity: number;
+  symbol: Raster;
   particleCount: number;
 }
 
@@ -70,7 +65,7 @@ export class IntroScene {
   }
 
   constructor(params: IntroSceneParams) {
-    const { canvas, viewport, pixelRatio, wordmark, symbolLarge, symbolSmall, anchor } = params;
+    const { canvas, viewport, pixelRatio, wordmark, symbol } = params;
     const { width: vw, height: vh } = viewport;
 
     this.renderer = new WebGLRenderer({
@@ -85,49 +80,33 @@ export class IntroScene {
 
     this.camera = new OrthographicCamera(-vw / 2, vw / 2, vh / 2, -vh / 2, -1, 1);
 
-    // Trajetória levemente curva do centro até o cabeçalho.
-    const p0 = new Vector2(0, 0);
-    const p3 = new Vector2(anchor.x, anchor.y);
-    const d = p3.clone().sub(p0);
-    const length = d.length();
-    // Perpendicular voltada para cima: o símbolo sobe em arco antes de assentar.
-    const perp = new Vector2(-d.y, d.x).normalize();
-    if (perp.y < 0) perp.multiplyScalar(-1);
-    const p1 = p0.clone().addScaledVector(d, 0.28).addScaledVector(perp, length * 0.16);
-    const p2 = p0.clone().addScaledVector(d, 0.74).addScaledVector(perp, length * 0.07);
-
-    const symbolRadius = Math.max(symbolLarge.width, symbolLarge.height) / 2;
+    const symbolRadius = Math.max(symbol.width, symbol.height) / 2;
 
     this.uniforms = {
       uClock: { value: 0 },
       uWordHalf: { value: wordmark.width / 2 },
       uWordAmp: { value: Math.max(3, wordmark.width * 0.024) },
       uSymbolRadius: { value: symbolRadius },
-      uP0: { value: p0 },
-      uP1: { value: p1 },
-      uP2: { value: p2 },
-      uP3: { value: p3 },
-      uScaleEnd: { value: anchor.width / symbolLarge.width },
       uSize: { value: vw < 768 ? 1.5 : 1.7 },
       uPixelRatio: { value: pixelRatio },
       uScatter: { value: Math.min(vw, vh) * 0.06 },
     };
 
     this.addWordmark(wordmark);
-    this.addSymbol(symbolLarge, symbolSmall, params.anchorOpacity);
+    this.addSymbol(symbol);
 
     this.count = params.particleCount;
-    this.points = this.createParticles(wordmark, symbolLarge, params.particleCount, symbolRadius);
+    this.points = this.createParticles(wordmark, symbol, params.particleCount, symbolRadius);
     this.scene.add(this.points);
 
     // Compila os shaders antes da linha do tempo começar (evita travadas).
     this.renderer.compile(this.scene, this.camera);
   }
 
-  private texture(raster: Raster, mipmaps: boolean): Texture {
+  private texture(raster: Raster): Texture {
     const texture = new CanvasTexture(raster.canvas);
-    texture.generateMipmaps = mipmaps;
-    texture.minFilter = mipmaps ? LinearMipmapLinearFilter : LinearFilter;
+    texture.generateMipmaps = false;
+    texture.minFilter = LinearFilter;
     texture.magFilter = LinearFilter;
     texture.needsUpdate = true;
     this.disposables.push(texture);
@@ -155,7 +134,7 @@ export class IntroScene {
     const mesh = new Mesh(
       geometry,
       this.material(wordmarkVertex, wordmarkFragment, {
-        uMap: { value: this.texture(raster, false) },
+        uMap: { value: this.texture(raster) },
         uSize: { value: new Vector2(raster.width, raster.height) },
       }),
     );
@@ -164,16 +143,14 @@ export class IntroScene {
     this.scene.add(mesh);
   }
 
-  private addSymbol(large: Raster, small: Raster, opacityEnd: number) {
-    const geometry = new PlaneGeometry(large.width, large.height);
+  private addSymbol(raster: Raster) {
+    const geometry = new PlaneGeometry(raster.width, raster.height);
     this.disposables.push(geometry);
     const mesh = new Mesh(
       geometry,
       this.material(symbolVertex, symbolFragment, {
-        uMapLarge: { value: this.texture(large, true) },
-        uMapSmall: { value: this.texture(small, false) },
-        uSize: { value: new Vector2(large.width, large.height) },
-        uOpacityEnd: { value: opacityEnd },
+        uMap: { value: this.texture(raster) },
+        uSize: { value: new Vector2(raster.width, raster.height) },
       }),
     );
     mesh.renderOrder = 1;

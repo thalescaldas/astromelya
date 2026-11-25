@@ -8,10 +8,13 @@
  *   0.00 ───── revelação ───── 0.80
  *        0.35 ─────────── deformação + atração gravitacional ───────── 2.10
  *                  0.95 ────────── dissolução (nascimento das partículas) ── 2.30
- *                              2.20 ──────── condensação no símbolo ──────── 3.40
- *                                    2.70 ─────────── migração (Bézier) ─────────── 4.15
- *                                          3.00 ─────── flor ─────── 4.30
- *                                                         4.05 ─ troca ─ 4.20
+ *                              2.20 ──────── condensação no símbolo ──────── 3.00
+ *                                                3.30 ── o símbolo se desfaz no centro ── 3.95
+ *                                                     3.55 ── símbolo do cabeçalho + Projetos ── 4.25
+ *                                                    3.50 ─────────── flor ─────────── 4.70
+ *
+ * O símbolo não se desloca: desaparece no centro enquanto o símbolo oficial
+ * se materializa no cabeçalho, junto com a flor e o botão Projetos.
  */
 export const INTRO_TIMINGS = {
   REVEAL_END: 0.8,
@@ -25,15 +28,14 @@ export const INTRO_TIMINGS = {
   SOLID_SPAN: 0.9,
   CONDENSE_IN: 0.05,
   CONDENSE_OUT: 0.32,
-  FLIGHT_START: 2.7,
-  FLIGHT_END: 4.15,
-  HANDOFF_START: 4.05,
-  HANDOFF_END: 4.2,
-  FLOWER_START: 3.0,
-  FLOWER_DURATION: 1.3,
-  NAV_START: 3.55,
-  NAV_DURATION: 0.65,
-  TOTAL: 4.3,
+  SYMBOL_FADE_START: 3.3,
+  SYMBOL_FADE_END: 3.95,
+  /** Símbolo do cabeçalho e botão Projetos surgem juntos. */
+  CHROME_START: 3.55,
+  CHROME_DURATION: 0.7,
+  FLOWER_START: 3.5,
+  FLOWER_DURATION: 1.2,
+  TOTAL: 4.7,
   /** Janela usada para medir o desempenho antes de as partículas surgirem. */
   ADAPT_AT: 0.85,
 } as const;
