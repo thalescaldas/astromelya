@@ -2,6 +2,8 @@ import gsap from "gsap";
 import { CustomEase } from "gsap/CustomEase";
 import type { IntroScene } from "@/components/intro/IntroScene";
 import { loadImage, rasterize } from "@/components/particles/raster";
+import { getActivePhase } from "@/config/evolution";
+import { prepareGrowth, type GrowthController } from "./growth";
 import { INTRO_STORAGE_KEY } from "./introBoot";
 import { INTRO_TIMINGS as T } from "./introTimings";
 
@@ -78,6 +80,18 @@ export function runIntro(options: IntroOptions): IntroController {
   const ctx = gsap.context(() => {});
   const clock = { value: 0 };
 
+  // Nascimento de Genesis: o vídeo começa a ser baixado junto com a introdução.
+  const flowerAsset = getActivePhase().flower;
+  const growth: GrowthController | null = flowerAsset.growth
+    ? prepareGrowth({
+        src: flowerAsset.growth.src,
+        ratio: flowerAsset.width / flowerAsset.height,
+        blend: T.GROWTH_BLEND,
+      })
+    : null;
+  let growthStarted = false;
+  let skipped = false;
+
   let disposed = false;
   let finished = false;
   let scene: IntroScene | null = null;
@@ -108,6 +122,8 @@ export function runIntro(options: IntroOptions): IntroController {
   };
 
   const skip = () => {
+    skipped = true;
+    if (growthStarted) growth?.skip();
     if (timeline && !finished) gsap.to(timeline, { timeScale: 12, duration: 0.3, ease: "power1.in" });
   };
 
@@ -139,6 +155,8 @@ export function runIntro(options: IntroOptions): IntroController {
     root.removeAttribute("data-intro");
     root.removeAttribute("data-intro-js");
     ctx.revert();
+    // O crescimento continua após a introdução; se não começou, libera o vídeo.
+    if (!growthStarted) growth?.dispose();
     options.onComplete();
   };
 
@@ -206,11 +224,25 @@ export function runIntro(options: IntroOptions): IntroController {
       }
 
       if (flower) {
-        tl.fromTo(
+        // Fallback: revelação estática da imagem oficial (sem zoom).
+        const staticReveal = gsap.fromTo(
           flower,
-          { autoAlpha: 0, scale: 1.03 },
-          { autoAlpha: 1, scale: 1, duration: T.FLOWER_DURATION, ease: settleEase },
-          T.FLOWER_START,
+          { autoAlpha: 0 },
+          { autoAlpha: 1, duration: T.FLOWER_DURATION, ease: settleEase, immediateRender: false },
+        );
+        tl.add(staticReveal, T.FLOWER_START);
+
+        // Nascimento: se o vídeo estiver pronto, substitui a revelação estática.
+        tl.call(
+          () => {
+            if (skipped || !growth?.ready) return;
+            const started = growth.start(flower, () => gsap.set(flower, { autoAlpha: 1 }));
+            if (!started) return;
+            growthStarted = true;
+            tl.remove(staticReveal);
+          },
+          [],
+          T.GROWTH_START,
         );
       }
       // Símbolo oficial e botão Projetos se materializam juntos, já no lugar.
@@ -240,6 +272,8 @@ export function runIntro(options: IntroOptions): IntroController {
       disposed = true;
       detach();
       ctx.revert();
+      // Desmontagem antes do fim (ex.: navegação): encerra também o crescimento.
+      if (!finished) growth?.dispose();
     },
   };
 }

@@ -27,6 +27,11 @@ export interface FlowerAsset {
    * em telas estreitas.
    */
   focal: { x: number; y: number };
+  /**
+   * Vídeo de crescimento (opcional), tratado para terminar no mesmo
+   * enquadramento, escala e luminância da imagem oficial.
+   */
+  growth?: { src: string };
 }
 
 export interface ParticlesConfig {
@@ -98,6 +103,7 @@ export const phases: Record<PhaseId, EvolutionPhase> = {
       height: FLOWER_HEIGHT,
       alt: "Flor Genesis em preto e branco sobre fundo escuro",
       focal: { x: 0.484, y: 0.5 },
+      growth: { src: "/flowers/genesis-growth.mp4" },
     },
     particles: disabledParticles,
     animations: {

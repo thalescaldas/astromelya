@@ -51,3 +51,11 @@ Em `src/config/evolution.ts`, altere `ACTIVE_PHASE_ID` para `"metamorphosis"`.
 - Com `prefers-reduced-motion: reduce`, a introdução não é exibida.
 - Configuração em `src/config/evolution.ts` → `animations.intro` (`enabled`, `oncePerSession`).
 - Tempos e duração total: somente em `src/animations/introTimings.ts` (fonte única).
+
+### Nascimento de Genesis
+
+- `public/flowers/genesis-growth.mp4`: vídeo de crescimento (5 s, 1280×720, sem áudio), tratado para
+  coincidir com `genesis.webp` em escala, posição, luminância e preto absoluto.
+- Começa em 6,9 s (enquanto o símbolo central se desfaz) e termina em 11,9 s, fundindo-se à imagem
+  oficial nos últimos 0,5 s. Lógica em `src/animations/growth.ts`; caminho em `src/config/evolution.ts`.
+- Sem o vídeo (falha de rede, autoplay bloqueado), a imagem oficial é revelada diretamente.

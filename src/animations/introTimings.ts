@@ -14,7 +14,7 @@
  *                                   3.20 ─────────── condensação gradual (partículas flutuando) ─────────── 5.70
  *                                                                              5.70 ──── contemplação ──── 6.90
  *                                                                                        6.90 ── o símbolo se desfaz ── 7.60
- *                                                                                           7.15 ────── flor ────── 8.00
+ *                                                                                        6.90 ───────── nascimento de Genesis (vídeo) ───────── 11.90
  *                                                                                            7.20 ── cabeçalho + Projetos ── 7.90
  *
  * O símbolo não se desloca: desaparece no centro enquanto o símbolo oficial
@@ -52,8 +52,17 @@ export const INTRO_TIMINGS = {
   /** Símbolo do cabeçalho e botão Projetos surgem juntos. */
   CHROME_START: 7.2,
   CHROME_DURATION: 0.7,
+  /** Fallback (sem vídeo): revelação estática da imagem oficial. */
   FLOWER_START: 7.15,
   FLOWER_DURATION: 0.85,
+  /**
+   * Nascimento de Genesis: o vídeo de crescimento (5 s) começa enquanto o
+   * símbolo central se desfaz e termina em 11,9 s, fundindo-se à imagem
+   * oficial nos últimos GROWTH_BLEND segundos. Continua após a liberação da
+   * cena WebGL (TOTAL).
+   */
+  GROWTH_START: 6.9,
+  GROWTH_BLEND: 0.5,
   TOTAL: 8.0,
   /** Janela usada para medir o desempenho antes de as partículas surgirem. */
   ADAPT_AT: 1.2,
