@@ -60,7 +60,11 @@ Em `src/config/evolution.ts`, altere `ACTIVE_PHASE_ID` para `"metamorphosis"`.
   uma camada Canvas 2D sobre a fotografia, recortada a cada quadro pela máscara de oclusão
   `public/flowers/genesis-mask.png` (silhueta de pétalas, caule e estames gerada a partir de
   `genesis.webp`) — todas as partículas e halos ficam atrás da flor. Órbitas elípticas inclinadas,
-  ondulação orgânica, cintilação lenta e profundidade contínua. Surgem após o fim do florescimento.
+  ondulação orgânica, cintilação lenta e profundidade contínua.
+- **Surgimento gradual**: após o florescimento, a Home começa sem partículas; elas nascem uma a uma ao
+  longo de 180 s de permanência visível (`progress = (elapsed / 180)^1.4`), cada uma com fade-in de
+  4–8 s e já em órbita. O tempo só conta com a Home aberta e visível, é preservado na sessão
+  (`sessionStorage`) ao navegar e recomeça em uma nova sessão.
 - **Parallax** em três profundidades (partículas distantes, flor, partículas próximas), com interpolação
   exponencial e limite circular. O cabeçalho é estático.
 - **Gravidade secreta**: pressionar e segurar a flor (mouse ou toque) atrai as partículas para o coração

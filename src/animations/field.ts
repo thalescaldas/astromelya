@@ -49,7 +49,11 @@ interface Particle {
   wanderPhase: [number, number];
   twinkleFreq: number;
   twinklePhase: number;
-  delay: number;
+  /** Instante de nascimento (s de permanência acumulada) e duração do fade-in. */
+  birth: number;
+  fade: number;
+  /** Visibilidade atual (0–1), calculada uma vez por quadro. */
+  appear: number;
   ring: number;
   ringPhase: number;
   // estado integrado (px CSS, relativo ao centro)
@@ -104,7 +108,9 @@ function createParticle(): Particle {
     wanderPhase: [rand(0, TAU), rand(0, TAU)],
     twinkleFreq: rand(P.twinkle.frequency.min, P.twinkle.frequency.max),
     twinklePhase: rand(0, TAU),
-    delay: Math.random() * FIELD.emergence.stagger,
+    birth: 0,
+    fade: rand(FIELD.emergence.fade.min, FIELD.emergence.fade.max),
+    appear: 0,
     ring: rand(FIELD.gravity.ring.min, FIELD.gravity.ring.max),
     ringPhase: rand(0, TAU),
     x: 0,
@@ -113,6 +119,42 @@ function createParticle(): Particle {
     vy: 0,
     z: 0,
   };
+}
+
+/**
+ * Momentos de nascimento: um quantil por partícula, com jitter dentro da própria
+ * faixa (estratificado), convertido pelo inverso da curva de progressão e
+ * distribuído em ordem aleatória entre as partículas.
+ */
+function assignBirths(particles: Particle[]) {
+  const E = FIELD.emergence;
+  const n = particles.length;
+  const order = particles.map((_, i) => i);
+  for (let i = n - 1; i > 0; i--) {
+    const j = (Math.random() * (i + 1)) | 0;
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  for (let k = 0; k < n; k++) {
+    const q = (k + 0.15 + Math.random() * 0.7) / n;
+    particles[order[k]].birth = E.totalSeconds * Math.pow(q, 1 / E.exponent);
+  }
+}
+
+function loadElapsed(): number {
+  try {
+    const value = Number.parseFloat(sessionStorage.getItem(FIELD.emergence.storageKey) ?? "");
+    return Number.isFinite(value) && value > 0 ? value : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveElapsed(value: number) {
+  try {
+    sessionStorage.setItem(FIELD.emergence.storageKey, value.toFixed(2));
+  } catch {
+    // armazenamento indisponível: o progresso recomeça na próxima visita
+  }
 }
 
 export function runField(options: FieldOptions): FieldController {
@@ -128,7 +170,15 @@ export function runField(options: FieldOptions): FieldController {
   const sprite = createSprite();
   const viewportCount = window.innerWidth < P.mobileBreakpoint ? P.mobile : P.desktop;
   const particles: Particle[] = Array.from({ length: viewportCount }, createParticle);
+  assignBirths(particles);
   let active = particles.length;
+
+  // Permanência acumulada (somente com a Home visível e após o florescimento).
+  const E = FIELD.emergence;
+  let elapsed = loadElapsed();
+  const resumedAt = elapsed;
+  let sinceSave = 0;
+  let bornCount = -1;
 
   // Geometria (atualizada só em resize)
   let vw = 0;
@@ -227,13 +277,22 @@ export function runField(options: FieldOptions): FieldController {
     gRaw = Math.min(1, Math.max(0, gRaw));
     const g = smooth(gRaw);
 
-    const kHome = G.home * (1 - g);
-    const kPull = G.pull * g;
-    const damping = 2 * Math.sqrt(Math.max(kHome + kPull, 0.0001));
     const maxV = G.maxSpeed * w;
+    const resume = smooth((elapsed - resumedAt) / E.resumeFade);
+    let born = 0;
 
     for (let i = 0; i < active; i++) {
       const p = particles[i];
+      // Visibilidade: fade-in individual a partir do nascimento; as que já tinham
+      // nascido numa visita anterior da sessão reaparecem suavemente.
+      const fresh = smooth((elapsed - p.birth) / p.fade);
+      p.appear = reducedMotion ? 1 : p.birth <= resumedAt ? fresh * resume : fresh;
+      if (p.appear > 0) born++;
+      // A gravidade age somente sobre partículas nascidas (proporcional à visibilidade).
+      const gb = g * p.appear;
+      const kHome = G.home * (1 - gb);
+      const kPull = G.pull * gb;
+      const damping = 2 * Math.sqrt(Math.max(kHome + kPull, 0.0001));
       const o = orbit(p, clock);
       p.z = o.z;
       // anel giratório no coração da flor (alvo sob gravidade)
@@ -253,6 +312,11 @@ export function runField(options: FieldOptions): FieldController {
       p.x += p.vx * dt;
       p.y += p.vy * dt;
     }
+    if (born !== bornCount) {
+      bornCount = born;
+      // Diagnóstico leve (muda no máximo uma vez por nascimento): partículas nascidas.
+      canvas.dataset.born = String(born);
+    }
     return g;
   };
 
@@ -266,7 +330,7 @@ export function runField(options: FieldOptions): FieldController {
 
     for (let i = 0; i < active; i++) {
       const p = particles[i];
-      const appear = smooth((clock - emergeAt - p.delay) / FIELD.emergence.duration);
+      const appear = p.appear;
       if (appear <= 0) continue;
       // profundidade 0 (distante) … 1 (próxima): define tamanho, brilho e parallax
       const depth = (p.z + 1) / 2;
@@ -315,6 +379,17 @@ export function runField(options: FieldOptions): FieldController {
     last = now;
     const dt = Math.min(dtRaw, 1 / 30);
     clock += dt;
+    // Permanência: conta só depois do florescimento (pausada com a aba oculta,
+    // pois o ciclo para). Pressionar a flor não altera este relógio.
+    if (clock >= emergeAt) {
+      const step = Math.min(dtRaw, E.maxStep);
+      elapsed += step;
+      sinceSave += step;
+      if (sinceSave >= E.saveInterval) {
+        sinceSave = 0;
+        saveElapsed(elapsed);
+      }
+    }
 
     if (!adapted) {
       sampled++;
@@ -346,6 +421,7 @@ export function runField(options: FieldOptions): FieldController {
   const stop = () => {
     cancelAnimationFrame(raf);
     raf = 0;
+    if (!reducedMotion) saveElapsed(elapsed);
   };
 
   // ── Eventos ─────────────────────────────────────────────────────────
@@ -401,7 +477,10 @@ export function runField(options: FieldOptions): FieldController {
   maskImage.decoding = "async";
   maskImage.onload = () => {
     prepareMask();
-    if (reducedMotion) draw(0);
+    if (reducedMotion) {
+      step(0);
+      draw(0);
+    }
   };
   maskImage.src = options.maskSrc;
 

@@ -30,8 +30,28 @@ export const FIELD = {
     haloScale: 5,
   },
 
-  /** Entrada: partículas surgem progressivamente (s). */
-  emergence: { duration: 2.6, stagger: 1.6 },
+  /**
+   * Surgimento gradual: recompensa quem permanece na Home.
+   * Após o florescimento, a população cresce partícula a partícula ao longo de
+   * `totalSeconds` de permanência visível, seguindo
+   *   progress = clamp((elapsed / totalSeconds) ^ exponent, 0, 1)
+   * (lenta no início). Nascimentos com jitter estratificado: sem intervalos
+   * mecânicos e sem grupos simultâneos.
+   */
+  emergence: {
+    totalSeconds: 180,
+    exponent: 1.4,
+    /** Fade-in individual de cada partícula (s). */
+    fade: { min: 4, max: 8 },
+    /** Ao voltar à Home na mesma sessão, as já nascidas reaparecem com este fade (s). */
+    resumeFade: 1.5,
+    /** Tempo de permanência acumulado na sessão (sessionStorage). */
+    storageKey: "astromelya:field-elapsed",
+    /** Intervalo de gravação do progresso (s). */
+    saveInterval: 2,
+    /** Maior passo de tempo contabilizado por quadro (s): ignora travamentos. */
+    maxStep: 0.25,
+  },
 
   parallax: {
     /** Deslocamento máximo (px CSS). */
