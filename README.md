@@ -1,6 +1,6 @@
 # Astromelya
 
-Universo criativo independente — astromelya.com
+astromelya.com
 
 ## Fase 01 — Fundação e Home
 
