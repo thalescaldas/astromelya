@@ -3,6 +3,7 @@ import {
   BufferAttribute,
   BufferGeometry,
   Color,
+  Vector2,
   OrthographicCamera,
   Points,
   Scene,
@@ -27,6 +28,7 @@ const vertexShader = /* glsl */ `
   uniform float uSize;
   uniform float uPixelRatio;
   uniform float uScatter;
+  uniform vec2 uFromScale;
 
   varying float vAlpha;
 
@@ -40,7 +42,8 @@ const vertexShader = /* glsl */ `
     float e = easeInOutCubic(t);
     float arc = sin(3.14159265 * t);
 
-    vec3 pos = mix(aFrom, aTo, e);
+    vec3 from = vec3(aFrom.xy * uFromScale, aFrom.z);
+    vec3 pos = mix(from, aTo, e);
 
     // Atração gravitacional: contrai e gira em torno do centro durante o voo.
     vec2 p = pos.xy * (1.0 - 0.22 * arc);
@@ -83,6 +86,7 @@ export interface ParticleMorphUniforms {
   uPixelRatio: { value: number };
   uScatter: { value: number };
   uColor: { value: Color };
+  uFromScale: { value: Vector2 };
   [key: string]: { value: unknown };
 }
 
@@ -120,6 +124,7 @@ export class ParticleMorph {
       uPixelRatio: { value: 1 },
       uScatter: { value: 80 },
       uColor: { value: new Color(color) },
+      uFromScale: { value: new Vector2(1, 1) },
     };
 
     this.material = new ShaderMaterial({
@@ -170,5 +175,7 @@ export class ParticleMorph {
     this.geometry.dispose();
     this.material.dispose();
     this.renderer.dispose();
+    // Libera o contexto WebGL imediatamente, sem esperar o coletor de lixo.
+    this.renderer.forceContextLoss();
   }
 }
