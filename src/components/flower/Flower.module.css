@@ -1,0 +1,34 @@
+/*
+ * Composição da flor
+ * ------------------
+ * A imagem oficial (16:9) já possui fundo preto. Ela é dimensionada por largura:
+ *   - em telas largas, ocupa ~88% da altura da viewport (espaço negativo acima/abaixo);
+ *   - em telas estreitas, a largura é limitada a 175vw — as margens pretas laterais
+ *     são recortadas e a flor permanece protagonista.
+ * A proporção nunca é alterada (height: auto).
+ */
+.flower {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-stage);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.image {
+  position: absolute;
+  top: calc(var(--focal-y) * 100%);
+  left: 50%;
+  width: min(calc(100dvh * var(--flower-ratio) * 0.88), 175vw);
+  max-width: none;
+  height: auto;
+  transform: translate(calc(var(--focal-x) * -100%), calc(var(--focal-y) * -100%));
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+@supports not (height: 100dvh) {
+  .image {
+    width: min(calc(100vh * var(--flower-ratio) * 0.88), 175vw);
+  }
+}

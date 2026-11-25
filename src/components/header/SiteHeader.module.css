@@ -1,0 +1,52 @@
+.header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: var(--z-chrome);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding:
+    max(var(--edge), env(safe-area-inset-top))
+    max(var(--edge), env(safe-area-inset-right))
+    0
+    max(var(--edge), env(safe-area-inset-left));
+  pointer-events: none;
+}
+
+.header > * {
+  pointer-events: auto;
+}
+
+.symbol {
+  display: block;
+  opacity: 0.92;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.symbol:hover {
+  opacity: 1;
+}
+
+.symbolImage {
+  width: clamp(2.25rem, 3.4vw, 3rem);
+  height: auto;
+}
+
+.navLink {
+  display: inline-block;
+  /* Área de toque confortável sem alterar a leitura visual */
+  padding: 0.75rem 0 0.75rem 0.75rem;
+  margin: -0.5rem 0 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-fg);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.navLink:hover,
+.navLink[aria-current="page"] {
+  color: var(--color-fg-strong);
+}
