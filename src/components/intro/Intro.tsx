@@ -42,12 +42,11 @@ export function Intro({ config }: IntroProps) {
       canvas,
       wordmark,
       symbol,
-      durationMs: config.durationMs,
       onComplete: () => setDone(true),
     });
 
     return () => controller.dispose();
-  }, [config.enabled, config.durationMs]);
+  }, [config.enabled]);
 
   if (done || !config.enabled) return null;
 

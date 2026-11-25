@@ -28,7 +28,7 @@ public/brand, public/flowers   recursos oficiais (não modificar)
 src/app                        rotas (/ e /projetos), layout e metadados
 src/components/header          símbolo + botão Projetos
 src/components/flower          flor protagonista
-src/components/intro           introdução (~4,7 s): cena WebGL única (IntroScene) e shaders
+src/components/intro           introdução (6,5 s): cena WebGL única (IntroScene) e shaders
 src/components/particles       rasterização e amostragem dos SVGs oficiais
 src/components/gallery         (reservado) galeria de projetos
 src/components/transitions     (reservado) transições entre páginas
@@ -49,4 +49,5 @@ Em `src/config/evolution.ts`, altere `ACTIVE_PHASE_ID` para `"metamorphosis"`.
 - Para assistir de novo: `http://localhost:3000/?intro`.
 - Clique, toque ou qualquer tecla aceleram até o fim.
 - Com `prefers-reduced-motion: reduce`, a introdução não é exibida.
-- Configuração em `src/config/evolution.ts` → `animations.intro` (`enabled`, `durationMs`, `oncePerSession`).
+- Configuração em `src/config/evolution.ts` → `animations.intro` (`enabled`, `oncePerSession`).
+- Tempos e duração total: somente em `src/animations/introTimings.ts` (fonte única).

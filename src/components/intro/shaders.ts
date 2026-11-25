@@ -80,7 +80,7 @@ vec2 gravityScale() {
 }
 
 vec2 organic(vec2 p) {
-  return vnoise2(p * 0.018 + vec2(uClock * 0.35, -uClock * 0.25)) * uWordAmp * deformAmount();
+  return vnoise2(p * 0.018 + vec2(uClock * 0.2, -uClock * 0.14)) * uWordAmp * deformAmount();
 }
 
 /* Deslocamento aplicado à matéria do nome (traços e partículas). */
@@ -210,7 +210,7 @@ void main() {
   if (residual) {
     float drift = smoothstep(arrive - 0.2, arrive + 0.4, uClock);
     // Residuais pairam junto ao símbolo e se desfazem com ele, sem rastro.
-    pos += vnoise2(aTo * 0.08 + aSeed.xy * 10.0 + uClock * 0.7) * (1.5 + 6.0 * fade) * drift;
+    pos += vnoise2(aTo * 0.08 + aSeed.xy * 10.0 + uClock * 0.25) * (1.2 + 6.0 * fade) * drift;
     dissipate = smoothstep(0.0, 0.85, fade);
   } else {
     condense = smoothstep(arrive + CONDENSE_IN, arrive + CONDENSE_OUT, uClock);

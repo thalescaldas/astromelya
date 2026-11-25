@@ -3,12 +3,12 @@ import { CustomEase } from "gsap/CustomEase";
 import type { IntroScene } from "@/components/intro/IntroScene";
 import { loadImage, rasterize } from "@/components/particles/raster";
 import { INTRO_STORAGE_KEY } from "./introBoot";
-import { INTRO_BASE_DURATION, INTRO_TIMINGS as T } from "./introTimings";
+import { INTRO_TIMINGS as T } from "./introTimings";
 
 gsap.registerPlugin(CustomEase);
 
 /**
- * Introdução da Astromelya — um único fenômeno contínuo (~4,7 s).
+ * Introdução da Astromelya — um único fenômeno contínuo (6,5 s).
  *
  * Uma linha do tempo principal avança um relógio. Esse relógio conduz, no
  * mesmo shader, o nome, a matéria que dele se desprende e o símbolo que se
@@ -39,7 +39,6 @@ export interface IntroElements {
 }
 
 export interface IntroOptions extends IntroElements {
-  durationMs: number;
   onComplete: () => void;
 }
 
@@ -224,8 +223,8 @@ export function runIntro(options: IntroOptions): IntroController {
           T.CHROME_START,
         );
       }
+      // A linha do tempo dura exatamente INTRO_TIMINGS.TOTAL (fonte única).
       tl.set({}, {}, T.TOTAL);
-      tl.timeScale(INTRO_BASE_DURATION / Math.max(options.durationMs / 1000, 0.5));
     });
 
     overlay.dataset.state = "running";
