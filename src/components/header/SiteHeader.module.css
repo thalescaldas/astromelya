@@ -3,7 +3,7 @@
   inset: 0 0 auto 0;
   z-index: var(--z-chrome);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   padding:
     max(var(--edge), env(safe-area-inset-top))
@@ -17,18 +17,22 @@
   pointer-events: auto;
 }
 
-.symbol {
+.brand {
   display: block;
+  /* Área de toque confortável em torno do wordmark */
+  padding: 0.75rem 0.75rem 0.75rem 0;
+  margin: -0.75rem 0;
   opacity: 0.92;
   transition: opacity var(--duration-fast) var(--ease-out);
 }
 
-.symbol:hover {
+.brand:hover {
   opacity: 1;
 }
 
-.symbolImage {
-  width: clamp(2.25rem, 3.4vw, 3rem);
+/* Wordmark oficial: tipografia e espaçamento preservados (SVG sem alterações). */
+.wordmark {
+  width: clamp(8.5rem, 13vw, 11.5rem);
   height: auto;
 }
 
@@ -36,7 +40,7 @@
   display: inline-block;
   /* Área de toque confortável sem alterar a leitura visual */
   padding: 0.75rem 0 0.75rem 0.75rem;
-  margin: -0.5rem 0 0 0;
+  margin: -0.75rem 0;
   font-family: var(--font-mono);
   font-size: 0.75rem;
   font-weight: 400;

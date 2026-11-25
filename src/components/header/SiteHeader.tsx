@@ -13,23 +13,22 @@ export function SiteHeader({ current }: SiteHeaderProps) {
     <header className={styles.header}>
       <Link
         href={routes.home}
-        className={styles.symbol}
+        className={styles.brand}
         aria-label={`${site.name} — início`}
         aria-current={current === routes.home ? "page" : undefined}
       >
         <Image
-          src="/brand/simbolo.svg"
+          src="/brand/wordmark.svg"
           alt=""
-          width={289}
-          height={236}
+          width={491}
+          height={41}
           unoptimized
           preload
-          className={styles.symbolImage}
-          data-intro-hide="symbol"
+          className={styles.wordmark}
         />
       </Link>
 
-      <nav aria-label="Principal" data-intro-hide="nav">
+      <nav aria-label="Principal">
         <Link
           href={routes.projects}
           className={styles.navLink}

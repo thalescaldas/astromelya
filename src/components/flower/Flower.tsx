@@ -1,10 +1,13 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
 import type { FlowerAsset } from "@/config/evolution";
+import { FlowerBloom } from "./FlowerBloom";
 import styles from "./Flower.module.css";
 
 interface FlowerProps {
   flower: FlowerAsset;
+  /** Florescimento (vídeo de crescimento) na entrada da Home. */
+  bloom?: boolean;
 }
 
 /**
@@ -13,7 +16,7 @@ interface FlowerProps {
  * pelo ponto focal definido no sistema evolutivo. Este contêiner será o ponto
  * de ancoragem das partículas, do parallax e do easter egg nas próximas fases.
  */
-export function Flower({ flower }: FlowerProps) {
+export function Flower({ flower, bloom = false }: FlowerProps) {
   const style = {
     "--flower-ratio": flower.width / flower.height,
     "--focal-x": flower.focal.x,
@@ -21,7 +24,7 @@ export function Flower({ flower }: FlowerProps) {
   } as CSSProperties;
 
   return (
-    <figure className={styles.flower} style={style} data-intro-hide="flower">
+    <figure className={styles.flower} style={style}>
       <Image
         src={flower.src}
         alt={flower.alt}
@@ -29,10 +32,15 @@ export function Flower({ flower }: FlowerProps) {
         height={flower.height}
         preload
         fetchPriority="high"
-        quality={90}
-        sizes="(max-aspect-ratio: 1/1) 175vw, 100vw"
+        // Arquivo oficial servido sem recompressão: é exatamente a fotografia em
+        // que o vídeo de crescimento termina (78 KB; recomprimir só suavizaria).
+        unoptimized
         className={styles.image}
+        data-bloom-image
       />
+      {bloom && flower.growth && (
+        <FlowerBloom src={flower.growth.src} ratio={flower.width / flower.height} />
+      )}
     </figure>
   );
 }

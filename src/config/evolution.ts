@@ -49,6 +49,11 @@ export interface AnimationConfig {
    * (adicione `?intro` à URL para assistir novamente).
    */
   intro: { enabled: boolean; oncePerSession: boolean };
+  /**
+   * Florescimento de Genesis na entrada da Home (vídeo de crescimento).
+   * Uma vez por sessão; `?intro` reproduz novamente.
+   */
+  bloom: { enabled: boolean; oncePerSession: boolean };
   /** Parallax e profundidade em torno da flor. */
   parallax: { enabled: boolean; intensity: number };
   /** Distorção gravitacional / deformação orgânica. */
@@ -78,6 +83,7 @@ const FLOWER_HEIGHT = 941;
 
 const disabledAnimations: AnimationConfig = {
   intro: { enabled: false, oncePerSession: true },
+  bloom: { enabled: false, oncePerSession: true },
   parallax: { enabled: false, intensity: 0 },
   distortion: { enabled: false, strength: 0 },
   easterEgg: { enabled: false },
@@ -108,7 +114,10 @@ export const phases: Record<PhaseId, EvolutionPhase> = {
     particles: disabledParticles,
     animations: {
       ...disabledAnimations,
-      intro: { enabled: true, oncePerSession: true },
+      // Introdução cinematográfica descontinuada (arquivos preservados em
+      // src/components/intro e src/animations/intro*.ts, sem carregamento).
+      intro: { enabled: false, oncePerSession: true },
+      bloom: { enabled: true, oncePerSession: true },
     },
     audio: disabledAudio,
   },

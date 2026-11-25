@@ -1,0 +1,20 @@
+/*
+ * Florescimento de Genesis
+ * ------------------------
+ * <html data-bloom="play"> é definido pelo script de boot antes da primeira
+ * pintura: a imagem oficial fica oculta (fundo preto) até o vídeo terminar.
+ */
+html[data-bloom="play"] [data-bloom-image] {
+  opacity: 0;
+}
+
+/* Salvaguarda: se o JavaScript não assumir, a imagem é revelada. */
+html[data-bloom="play"]:not([data-bloom-js]) [data-bloom-image] {
+  animation: bloom-failsafe-reveal 850ms ease 2.5s forwards;
+}
+
+@keyframes bloom-failsafe-reveal {
+  to {
+    opacity: 1;
+  }
+}

@@ -43,19 +43,19 @@ src/styles                     tokens e estilos globais
 
 Em `src/config/evolution.ts`, altere `ACTIVE_PHASE_ID` para `"metamorphosis"`.
 
-### Introdução
+### Entrada da Home
 
-- Toca uma vez por sessão do navegador, apenas ao entrar pela Home.
-- Para assistir de novo: `http://localhost:3000/?intro`.
-- Clique, toque ou qualquer tecla aceleram até o fim.
-- Com `prefers-reduced-motion: reduce`, a introdução não é exibida.
-- Configuração em `src/config/evolution.ts` → `animations.intro` (`enabled`, `oncePerSession`).
-- Tempos e duração total: somente em `src/animations/introTimings.ts` (fonte única).
+- A Home abre diretamente: cabeçalho com o wordmark oficial e o botão Projetos.
+- **Florescimento de Genesis** (`src/animations/bloom.ts`): o vídeo `public/flowers/genesis-growth.mp4`
+  toca sobre a imagem oficial assim que estiver pronto — uma vez por sessão; `/?intro` reproduz novamente.
+  Com `prefers-reduced-motion`, a flor completa aparece diretamente (o vídeo nem é baixado).
+- O vídeo foi reconstruído no espaço da fotografia (1672×941): alinhamento ECC, tom monocromático com
+  preto absoluto e, no último 1,25 s, morph por fluxo óptico até `genesis.webp`. Os 0,5 s finais são a
+  própria fotografia, estática; a troca para a `<img>` acontece nesse trecho.
+- Sem vídeo (rede, codec, autoplay bloqueado), a imagem oficial é revelada diretamente.
 
-### Nascimento de Genesis
+### Introdução cinematográfica (descontinuada)
 
-- `public/flowers/genesis-growth.mp4`: vídeo de crescimento (5 s, 1280×720, sem áudio), tratado para
-  coincidir com `genesis.webp` em escala, posição, luminância e preto absoluto.
-- Começa em 6,9 s (enquanto o símbolo central se desfaz) e termina em 11,9 s, fundindo-se à imagem
-  oficial nos últimos 0,5 s. Lógica em `src/animations/growth.ts`; caminho em `src/config/evolution.ts`.
-- Sem o vídeo (falha de rede, autoplay bloqueado), a imagem oficial é revelada diretamente.
+Os arquivos da antiga introdução (nome → partículas → símbolo) foram preservados em
+`src/components/intro`, `src/components/particles` e `src/animations/intro*.ts`, mas não são importados
+nem carregados (`animations.intro.enabled: false` em `src/config/evolution.ts`).
