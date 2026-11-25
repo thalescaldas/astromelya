@@ -28,11 +28,22 @@ export const INTRO_TIMINGS = {
   DISSOLVE_START: 1.7,
   DISSOLVE_SPAN: 1.8,
   BIRTH_FADE: 0.18,
-  /** Viagem mínima de uma partícula: nenhuma é "sugada" em menos de 1,6 s. */
-  MIN_TRAVEL: 1.6,
-  /** Condensação gradual: o centro do símbolo se forma primeiro, as pontas por último. */
-  SOLID_START: 3.35,
-  SOLID_SPAN: 1.95,
+  /**
+   * Física das partículas (campo único de movimento):
+   * cada partícula recebe um tempo de viagem proporcional à distância, para
+   * que todas cruzem o espaço em velocidades parecidas e baixas.
+   *   velocidade de cruzeiro = FLOAT_SPEED × largura do nome (por segundo)
+   */
+  FLOAT_SPEED: 0.25,
+  /** Viagem mínima (partículas já próximas do centro). */
+  MIN_TRAVEL: 1.45,
+  /** Deriva extra aleatória: espalha as chegadas e deixa a formação gradual. */
+  FLOAT_EXTRA: 0.9,
+  /** Janela da condensação (referência para o fallback sem WebGL). */
+  FORM_START: 3.2,
+  FORM_END: 5.7,
+  /** Última chegada possível; a condensação termina ~0,45 s depois (5,7 s). */
+  ARRIVE_MAX: 5.25,
   CONDENSE_IN: 0.05,
   CONDENSE_OUT: 0.45,
   /** Contemplação: 5,7 s → 6,9 s, símbolo completo, nítido e estável. */

@@ -15,9 +15,6 @@ const defines = /* glsl */ `
 #define DISSOLVE_START ${f(T.DISSOLVE_START)}
 #define DISSOLVE_SPAN ${f(T.DISSOLVE_SPAN)}
 #define BIRTH_FADE ${f(T.BIRTH_FADE)}
-#define MIN_TRAVEL ${f(T.MIN_TRAVEL)}
-#define SOLID_START ${f(T.SOLID_START)}
-#define SOLID_SPAN ${f(T.SOLID_SPAN)}
 #define CONDENSE_IN ${f(T.CONDENSE_IN)}
 #define CONDENSE_OUT ${f(T.CONDENSE_OUT)}
 #define SYMBOL_FADE_START ${f(T.SYMBOL_FADE_START)}
@@ -34,6 +31,8 @@ uniform float uWordAmp;
 uniform float uSymbolRadius;
 /* Distribuição acumulada da ordem de formação (17 pontos, 0..1). */
 uniform float uCdf[17];
+/* Instante de chegada por quantil (17 pontos), calculado a partir das partículas. */
+uniform float uArriveQ[17];
 
 float hash12(vec2 p) {
   vec3 p3 = fract(vec3(p.xyx) * 0.1031);
@@ -108,10 +107,24 @@ float formationQuantile(float o) {
   return q;
 }
 
-/* Instante em que cada ponto do símbolo se condensa (do centro para fora). */
+float arrivalAtQuantile(float q) {
+  float x = clamp(q, 0.0, 1.0) * 16.0;
+  float t = uArriveQ[16];
+  for (int i = 0; i < 16; i++) {
+    float fi = float(i);
+    if (x >= fi && x <= fi + 1.0) t = mix(uArriveQ[i], uArriveQ[i + 1], x - fi);
+  }
+  return t;
+}
+
+/*
+ * Instante em que cada ponto do símbolo se condensa (do centro para fora).
+ * Usa a mesma tabela de chegadas das partículas: o traço do símbolo surge
+ * exatamente quando a partícula correspondente pousa ali.
+ */
 float arriveTime(vec2 p) {
   float o = clamp(0.8 * length(p) / uSymbolRadius + 0.2 * trigNoise(p * 0.06), 0.0, 1.0);
-  return SOLID_START + formationQuantile(o) * SOLID_SPAN;
+  return arrivalAtQuantile(formationQuantile(o));
 }
 
 /* Desaparecimento do símbolo no centro (0 → 1), suave nas duas pontas. */
@@ -187,6 +200,7 @@ ${common}
 attribute vec2 aFrom;
 attribute vec2 aTo;
 attribute vec4 aSeed;
+attribute float aArrive;
 uniform float uSize;
 uniform float uPixelRatio;
 uniform float uScatter;
@@ -195,7 +209,8 @@ varying float vAlpha;
 void main() {
   bool residual = aSeed.w < RESIDUAL_RATIO;
   float birth = birthTime(aFrom);
-  float arrive = max(arriveTime(aTo), birth + MIN_TRAVEL);
+  // Chegada calculada na CPU: viagem proporcional à distância (velocidade uniforme).
+  float arrive = max(aArrive, birth + 0.5);
 
   vec2 target = aTo;
 
@@ -212,7 +227,10 @@ void main() {
 
   // Vórtice gravitacional em torno do centro.
   vec2 rel = pos;
-  float theta = (0.45 + 0.6 * aSeed.z) * bell;
+  // Órbita por comprimento de arco: longe do centro o giro é mínimo (sem
+  // arremesso tangencial); perto do símbolo a espiral se intensifica.
+  float falloff = (uSymbolRadius * 1.6) / (uSymbolRadius * 1.6 + length(rel));
+  float theta = (0.45 + 0.6 * aSeed.z) * bell * falloff;
   float cs = cos(theta);
   float sn = sin(theta);
   rel = mat2(cs, sn, -sn, cs) * rel * (1.0 - 0.1 * bell);

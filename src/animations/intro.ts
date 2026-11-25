@@ -256,8 +256,8 @@ function buildFallback(tl: gsap.core.Timeline, wordmark: HTMLImageElement, symbo
     .fromTo(
       symbol,
       { autoAlpha: 0, scale: 1.06 },
-      { autoAlpha: 1, scale: 1, duration: T.SOLID_SPAN + 0.3, ease: settleEase },
-      T.SOLID_START - 0.3,
+      { autoAlpha: 1, scale: 1, duration: T.FORM_END - T.FORM_START, ease: settleEase },
+      T.FORM_START,
     )
     .to(
       symbol,

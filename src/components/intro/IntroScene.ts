@@ -15,6 +15,7 @@ import {
   WebGLRenderer,
   type Texture,
 } from "three";
+import { INTRO_TIMINGS as T } from "@/animations/introTimings";
 import { samplePoints, type Raster } from "@/components/particles/raster";
 import {
   particleFragment,
@@ -89,8 +90,9 @@ export class IntroScene {
       uSymbolRadius: { value: symbolRadius },
       uSize: { value: vw < 768 ? 1.5 : 1.7 },
       uPixelRatio: { value: pixelRatio },
-      uScatter: { value: Math.min(vw, vh) * 0.06 },
+      uScatter: { value: Math.min(vw, vh) * 0.045 },
       uCdf: { value: Array.from({ length: 17 }, (_, i) => i / 16) },
+      uArriveQ: { value: Array.from({ length: 17 }, () => 0) },
     };
 
     this.addWordmark(wordmark);
@@ -160,40 +162,59 @@ export class IntroScene {
   }
 
   /**
-   * Cada partícula liga um ponto do nome a um ponto do símbolo. Os pares são
-   * ordenados: quem nasce primeiro (bordas do nome) chega primeiro (centro do
-   * símbolo), o que mantém a formação contínua. Depois são embaralhados para
-   * que reduzir a quantidade desenhada preserve a distribuição.
+   * Cada partícula liga um ponto do nome a um ponto do símbolo.
+   *
+   * 1. O instante de nascimento vem da mesma função do shader (o traço se
+   *    apaga quando a partícula nasce).
+   * 2. O tempo de viagem é proporcional à distância até o centro, com uma
+   *    velocidade de cruzeiro única — nenhuma partícula é "sugada".
+   * 3. Os pares são formados por ordem de chegada: quem pousa primeiro ocupa
+   *    o centro do símbolo; as pontas recebem as últimas.
+   * 4. A tabela de chegadas por quantil vai para o shader, que condensa cada
+   *    traço do símbolo no instante exato em que sua partícula chega.
+   * Por fim os pares são embaralhados, para que reduzir a quantidade desenhada
+   * preserve a distribuição.
    */
   private createParticles(wordmark: Raster, symbol: Raster, count: number, symbolRadius: number): Points {
     const from = samplePoints(wordmark, count);
     const to = samplePoints(symbol, count);
     const half = wordmark.width / 2;
+    const speed = wordmark.width * T.FLOAT_SPEED;
 
-    const birthKey = new Float32Array(count);
-    const arriveKey = new Float32Array(count);
+    const arrival = new Float32Array(count);
+    const formKey = new Float32Array(count);
     for (let i = 0; i < count; i++) {
       const fx = from[i * 2];
       const fy = from[i * 2 + 1];
       const edge = 1 - Math.min(Math.abs(fx) / half, 1);
-      birthKey[i] = 0.6 * edge + 0.4 * trigNoise(fx * 0.02, fy * 0.02);
+      const b = Math.min(1, Math.max(0, 0.6 * edge + 0.4 * trigNoise(fx * 0.02, fy * 0.02)));
+      const birth = T.DISSOLVE_START + b * T.DISSOLVE_SPAN;
+      // Distância a percorrer a partir do traço já comprimido pela gravidade.
+      const distance = Math.hypot(fx * 0.9, fy) + symbolRadius * 0.3;
+      const travel = Math.max(T.MIN_TRAVEL, (Math.PI / 2) * (distance / speed)) + Math.random() * T.FLOAT_EXTRA;
+      arrival[i] = Math.min(T.ARRIVE_MAX, birth + travel);
+
       const tx = to[i * 2];
       const ty = to[i * 2 + 1];
-      arriveKey[i] = Math.min(1, Math.max(0, 0.8 * (Math.hypot(tx, ty) / symbolRadius) + 0.2 * trigNoise(tx * 0.06, ty * 0.06)));
+      formKey[i] = Math.min(1, Math.max(0, 0.8 * (Math.hypot(tx, ty) / symbolRadius) + 0.2 * trigNoise(tx * 0.06, ty * 0.06)));
     }
 
-    // Distribuição acumulada da ordem de formação: o shader a usa para que a
-    // condensação avance em ritmo constante durante toda a janela.
-    const sortedKeys = Array.from(arriveKey).sort((a, b) => a - b);
+    // Distribuição acumulada da ordem de formação (posição no símbolo → quantil).
+    const sortedForm = Array.from(formKey).sort((a, b) => a - b);
     const cdf = this.uniforms.uCdf.value;
     let cursor = 0;
     for (let k = 0; k <= 16; k++) {
-      const threshold = k / 16;
-      while (cursor < count && sortedKeys[cursor] <= threshold) cursor++;
+      while (cursor < count && sortedForm[cursor] <= k / 16) cursor++;
       cdf[k] = cursor / count;
     }
-    const byBirth = Array.from({ length: count }, (_, i) => i).sort((a, b) => birthKey[a] - birthKey[b]);
-    const byArrive = Array.from({ length: count }, (_, i) => i).sort((a, b) => arriveKey[a] - arriveKey[b]);
+
+    // Tabela de chegadas por quantil (quantil → instante).
+    const byArrival = Array.from({ length: count }, (_, i) => i).sort((a, b) => arrival[a] - arrival[b]);
+    const arriveQ = this.uniforms.uArriveQ.value;
+    for (let k = 0; k <= 16; k++) {
+      arriveQ[k] = arrival[byArrival[Math.min(count - 1, Math.round((k / 16) * (count - 1)))]];
+    }
+    const byForm = Array.from({ length: count }, (_, i) => i).sort((a, b) => formKey[a] - formKey[b]);
 
     // Embaralhamento (Fisher–Yates) aplicado aos pares.
     const order = Array.from({ length: count }, (_, i) => i);
@@ -204,15 +225,17 @@ export class IntroScene {
 
     const aFrom = new Float32Array(count * 2);
     const aTo = new Float32Array(count * 2);
+    const aArrive = new Float32Array(count);
     const aSeed = new Float32Array(count * 4);
     for (let k = 0; k < count; k++) {
       const rank = order[k];
-      const fi = byBirth[rank];
-      const ti = byArrive[rank];
+      const fi = byArrival[rank];
+      const ti = byForm[rank];
       aFrom[k * 2] = from[fi * 2];
       aFrom[k * 2 + 1] = from[fi * 2 + 1];
       aTo[k * 2] = to[ti * 2];
       aTo[k * 2 + 1] = to[ti * 2 + 1];
+      aArrive[k] = arrival[fi];
       for (let c = 0; c < 4; c++) aSeed[k * 4 + c] = Math.random();
     }
 
@@ -221,6 +244,7 @@ export class IntroScene {
     geometry.setAttribute("aFrom", new BufferAttribute(aFrom, 2));
     geometry.setAttribute("aTo", new BufferAttribute(aTo, 2));
     geometry.setAttribute("aSeed", new BufferAttribute(aSeed, 4));
+    geometry.setAttribute("aArrive", new BufferAttribute(aArrive, 1));
     this.disposables.push(geometry);
 
     const points = new Points(geometry, this.material(particleVertex, particleFragment, {}, true));
