@@ -54,6 +54,20 @@ Em `src/config/evolution.ts`, altere `ACTIVE_PHASE_ID` para `"metamorphosis"`.
   própria fotografia, estática; a troca para a `<img>` acontece nesse trecho.
 - Sem vídeo (rede, codec, autoplay bloqueado), a imagem oficial é revelada diretamente.
 
+### Genesis viva (Fase 03)
+
+- **Partículas permanentes** (`src/animations/field.ts`, `src/components/particles/GenesisField.tsx`):
+  duas camadas Canvas 2D — atrás e à frente da fotografia — com órbitas elípticas inclinadas, ondulação
+  orgânica, cintilação lenta e profundidade contínua. Surgem nos momentos finais do florescimento.
+- **Parallax** em três profundidades (partículas distantes, flor, partículas próximas), com interpolação
+  exponencial e limite circular. O cabeçalho é estático.
+- **Gravidade secreta**: pressionar e segurar a flor (mouse ou toque) atrai as partículas para o coração
+  da flor; ao soltar, retornam às órbitas. Integração com mola criticamente amortecida: posição e
+  velocidade contínuas.
+- **Parâmetros**: `src/config/field.ts` (quantidade, tamanhos, órbitas, parallax, gravidade, desempenho).
+- Ciclo único `requestAnimationFrame`, sem estado React por quadro; pausa com a aba oculta; recursos
+  liberados ao sair da Home. Movimento reduzido: quadro estático, sem parallax nem gravidade.
+
 ### Introdução cinematográfica (descontinuada)
 
 Os arquivos da antiga introdução (nome → partículas → símbolo) foram preservados em

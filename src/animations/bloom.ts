@@ -1,4 +1,5 @@
 import { BLOOM_STORAGE_KEY } from "./bloomBoot";
+import { BLOOM_SETTLING_EVENT } from "./field";
 
 /**
  * Florescimento de Genesis
@@ -40,6 +41,14 @@ export function runBloom(options: BloomOptions): BloomController {
   let frame = 0;
   let timeout = 0;
   let done = false;
+  let settlingSent = false;
+
+  /** Avisa o campo de partículas: a flor está assentando (partículas podem surgir). */
+  const announceSettling = () => {
+    if (settlingSent) return;
+    settlingSent = true;
+    window.dispatchEvent(new Event(BLOOM_SETTLING_EVENT));
+  };
 
   root.setAttribute("data-bloom-js", "");
   try {
@@ -58,6 +67,7 @@ export function runBloom(options: BloomOptions): BloomController {
   const settle = (fadeMs: number) => {
     if (done) return;
     done = true;
+    announceSettling();
     detachInput();
     window.clearTimeout(timeout);
     image.style.transition = fadeMs ? `opacity ${fadeMs}ms ease` : "none";
@@ -121,6 +131,8 @@ export function runBloom(options: BloomOptions): BloomController {
     if (!element) return;
     const duration = Number.isFinite(element.duration) ? element.duration : 0;
     const holdStart = duration - options.hold;
+    // Partículas surgem nos momentos finais do florescimento (início do morph final).
+    if (duration && element.currentTime >= holdStart - 1.25) announceSettling();
     if (duration && element.currentTime >= holdStart) {
       settle(0);
       const x = Math.min(1, (element.currentTime - holdStart) / (options.hold * 0.9));

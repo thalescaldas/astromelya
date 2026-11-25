@@ -6,4 +6,9 @@
   overflow: hidden;
   background: var(--color-bg);
   overscroll-behavior: none;
+  /* Pressionar e segurar a flor não abre menus nem seleciona a imagem. */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
