@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Manrope } from "next/font/google";
+import { createIntroBootScript } from "@/animations/introBoot";
+import { getActivePhase } from "@/config/evolution";
 import { site } from "@/config/site";
 import "@/styles/globals.css";
 
@@ -49,9 +51,19 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+const introBootScript = createIntroBootScript(getActivePhase().animations.intro);
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang={site.lang} className={`${manrope.variable} ${plexMono.variable}`}>
+    <html
+      lang={site.lang}
+      className={`${manrope.variable} ${plexMono.variable}`}
+      // O script de boot adiciona data-intro antes da hidratação.
+      suppressHydrationWarning
+    >
+      <head>
+        {introBootScript && <script dangerouslySetInnerHTML={{ __html: introBootScript }} />}
+      </head>
       <body>{children}</body>
     </html>
   );

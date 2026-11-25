@@ -1,0 +1,62 @@
+.overlay {
+  display: none;
+}
+
+:global(html[data-intro="play"]) .overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-intro);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Salvaguarda: se o JavaScript não assumir, a camada some sozinha. */
+:global(html[data-intro="play"]:not([data-intro-js])) .overlay {
+  animation: intro-failsafe-hide 0s linear 6s forwards;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.wordmark,
+.symbol {
+  grid-area: 1 / 1;
+  height: auto;
+  max-width: none;
+  opacity: 0;
+  visibility: hidden;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.wordmark {
+  width: clamp(15rem, 58vw, 38rem);
+}
+
+.symbol {
+  width: clamp(4.5rem, 11vw, 8.25rem);
+}
+
+.defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+@keyframes intro-failsafe-hide {
+  to {
+    visibility: hidden;
+    opacity: 0;
+  }
+}

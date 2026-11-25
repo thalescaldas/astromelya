@@ -28,11 +28,11 @@ public/brand, public/flowers   recursos oficiais (não modificar)
 src/app                        rotas (/ e /projetos), layout e metadados
 src/components/header          símbolo + botão Projetos
 src/components/flower          flor protagonista
-src/components/intro           (reservado) introdução ~3 s
-src/components/particles       (reservado) partículas Three.js
+src/components/intro           introdução ~3 s (nome → partículas → símbolo)
+src/components/particles       partículas Three.js (ParticleMorph) e amostragem de imagens
 src/components/gallery         (reservado) galeria de projetos
 src/components/transitions     (reservado) transições entre páginas
-src/animations                 tokens de movimento e utilitário de reduced-motion
+src/animations                 linha do tempo da introdução (GSAP), script de boot e tokens de movimento
 src/config/evolution.ts        sistema evolutivo — fase ativa definida manualmente
 src/config/site.ts             dados institucionais e rotas
 src/projects                   registro de projetos (vazio)
@@ -42,3 +42,11 @@ src/styles                     tokens e estilos globais
 ### Trocar a fase visual
 
 Em `src/config/evolution.ts`, altere `ACTIVE_PHASE_ID` para `"metamorphosis"`.
+
+### Introdução
+
+- Toca uma vez por sessão do navegador, apenas ao entrar pela Home.
+- Para assistir de novo: `http://localhost:3000/?intro`.
+- Clique, toque ou qualquer tecla aceleram até o fim.
+- Com `prefers-reduced-motion: reduce`, a introdução não é exibida.
+- Configuração em `src/config/evolution.ts` → `animations.intro` (`enabled`, `durationMs`, `oncePerSession`).

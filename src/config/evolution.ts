@@ -37,8 +37,12 @@ export interface ParticlesConfig {
 }
 
 export interface AnimationConfig {
-  /** Introdução (~3 s) com metamorfose do nome em símbolo. */
-  intro: { enabled: boolean; durationMs: number };
+  /**
+   * Introdução (~3 s): nome → deformação orgânica → partículas → símbolo.
+   * `oncePerSession` evita repetir a introdução na mesma sessão do navegador
+   * (adicione `?intro` à URL para assistir novamente).
+   */
+  intro: { enabled: boolean; durationMs: number; oncePerSession: boolean };
   /** Parallax e profundidade em torno da flor. */
   parallax: { enabled: boolean; intensity: number };
   /** Distorção gravitacional / deformação orgânica. */
@@ -67,7 +71,7 @@ const FLOWER_WIDTH = 1672;
 const FLOWER_HEIGHT = 941;
 
 const disabledAnimations: AnimationConfig = {
-  intro: { enabled: false, durationMs: 3000 },
+  intro: { enabled: false, durationMs: 3200, oncePerSession: true },
   parallax: { enabled: false, intensity: 0 },
   distortion: { enabled: false, strength: 0 },
   easterEgg: { enabled: false },
@@ -95,7 +99,10 @@ export const phases: Record<PhaseId, EvolutionPhase> = {
       focal: { x: 0.484, y: 0.5 },
     },
     particles: disabledParticles,
-    animations: disabledAnimations,
+    animations: {
+      ...disabledAnimations,
+      intro: { enabled: true, durationMs: 3200, oncePerSession: true },
+    },
     audio: disabledAudio,
   },
   metamorphosis: {

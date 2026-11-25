@@ -1,0 +1,23 @@
+/*
+ * Estado global da introdução
+ * ---------------------------
+ * <html data-intro="play"> é definido pelo script de boot antes da primeira
+ * pintura. Enquanto ativo, a flor, o símbolo e a navegação ficam ocultos;
+ * a linha do tempo GSAP os revela e, ao terminar, remove o atributo.
+ */
+html[data-intro="play"] [data-intro-hide] {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Salvaguarda: sem JavaScript, o conteúdo reaparece após alguns segundos. */
+html[data-intro="play"]:not([data-intro-js]) [data-intro-hide] {
+  animation: intro-failsafe-reveal 600ms ease 6s forwards;
+}
+
+@keyframes intro-failsafe-reveal {
+  to {
+    opacity: 1;
+    visibility: visible;
+  }
+}

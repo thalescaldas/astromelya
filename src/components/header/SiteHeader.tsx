@@ -25,10 +25,11 @@ export function SiteHeader({ current }: SiteHeaderProps) {
           unoptimized
           preload
           className={styles.symbolImage}
+          data-intro-hide="symbol"
         />
       </Link>
 
-      <nav aria-label="Principal">
+      <nav aria-label="Principal" data-intro-hide="nav">
         <Link
           href={routes.projects}
           className={styles.navLink}

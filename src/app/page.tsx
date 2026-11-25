@@ -1,5 +1,6 @@
 import { SiteHeader } from "@/components/header/SiteHeader";
 import { Flower } from "@/components/flower/Flower";
+import { Intro } from "@/components/intro/Intro";
 import { getActivePhase } from "@/config/evolution";
 import { routes, site } from "@/config/site";
 import styles from "./page.module.css";
@@ -14,6 +15,7 @@ export default function HomePage() {
         <h1 className="visually-hidden">{site.name}</h1>
         <Flower flower={phase.flower} />
       </main>
+      <Intro config={phase.animations.intro} />
     </>
   );
 }

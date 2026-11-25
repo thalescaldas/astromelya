@@ -21,7 +21,7 @@ export function Flower({ flower }: FlowerProps) {
   } as CSSProperties;
 
   return (
-    <figure className={styles.flower} style={style}>
+    <figure className={styles.flower} style={style} data-intro-hide="flower">
       <Image
         src={flower.src}
         alt={flower.alt}
