@@ -108,7 +108,7 @@ export function runIntro(options: IntroOptions): IntroController {
   };
 
   const skip = () => {
-    if (timeline && !finished) gsap.to(timeline, { timeScale: 7, duration: 0.3, ease: "power1.in" });
+    if (timeline && !finished) gsap.to(timeline, { timeScale: 12, duration: 0.3, ease: "power1.in" });
   };
 
   // Barras do navegador móvel alteram só a altura: apenas rotação/redimensionamento real encerra.
