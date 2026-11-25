@@ -28,11 +28,11 @@ public/brand, public/flowers   recursos oficiais (não modificar)
 src/app                        rotas (/ e /projetos), layout e metadados
 src/components/header          símbolo + botão Projetos
 src/components/flower          flor protagonista
-src/components/intro           introdução ~3 s (nome → partículas → símbolo)
-src/components/particles       partículas Three.js (ParticleMorph) e amostragem de imagens
+src/components/intro           introdução (~4,3 s): cena WebGL única (IntroScene) e shaders
+src/components/particles       rasterização e amostragem dos SVGs oficiais
 src/components/gallery         (reservado) galeria de projetos
 src/components/transitions     (reservado) transições entre páginas
-src/animations                 linha do tempo da introdução (GSAP), script de boot e tokens de movimento
+src/animations                 linha do tempo principal (GSAP), mapa de tempos, script de boot e tokens
 src/config/evolution.ts        sistema evolutivo — fase ativa definida manualmente
 src/config/site.ts             dados institucionais e rotas
 src/projects                   registro de projetos (vazio)

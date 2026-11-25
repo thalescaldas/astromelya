@@ -36,7 +36,6 @@
   user-select: none;
   -webkit-user-drag: none;
   pointer-events: none;
-  will-change: transform, opacity;
 }
 
 .wordmark {
@@ -47,12 +46,6 @@
   width: clamp(4.5rem, 11vw, 8.25rem);
 }
 
-.defs {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-}
 
 @keyframes intro-failsafe-hide {
   to {

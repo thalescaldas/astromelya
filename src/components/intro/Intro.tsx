@@ -6,8 +6,6 @@ import { runIntro } from "@/animations/intro";
 import type { AnimationConfig } from "@/config/evolution";
 import styles from "./Intro.module.css";
 
-const FILTER_ID = "astromelya-organic";
-
 interface IntroProps {
   config: AnimationConfig["intro"];
 }
@@ -16,6 +14,8 @@ interface IntroProps {
  * Camada da introdução. É renderizada no HTML estático, mas só fica visível
  * quando o script de boot marca `<html data-intro="play">`.
  * Puramente decorativa: o conteúdo acessível da página não depende dela.
+ * A animação acontece no <canvas> (WebGL); as imagens só são usadas no
+ * fallback sem WebGL.
  */
 export function Intro({ config }: IntroProps) {
   const [done, setDone] = useState(false);
@@ -23,8 +23,6 @@ export function Intro({ config }: IntroProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wordmarkRef = useRef<HTMLImageElement>(null);
   const symbolRef = useRef<HTMLImageElement>(null);
-  const turbulenceRef = useRef<SVGFETurbulenceElement>(null);
-  const displacementRef = useRef<SVGFEDisplacementMapElement>(null);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -34,9 +32,7 @@ export function Intro({ config }: IntroProps) {
     const canvas = canvasRef.current;
     const wordmark = wordmarkRef.current;
     const symbol = symbolRef.current;
-    const turbulence = turbulenceRef.current;
-    const displacement = displacementRef.current;
-    if (!overlay || !canvas || !wordmark || !symbol || !turbulence || !displacement) return;
+    if (!overlay || !canvas || !wordmark || !symbol) return;
 
     // O JavaScript assumiu: desativa a salvaguarda CSS.
     root.setAttribute("data-intro-js", "");
@@ -46,8 +42,6 @@ export function Intro({ config }: IntroProps) {
       canvas,
       wordmark,
       symbol,
-      turbulence,
-      displacement,
       durationMs: config.durationMs,
       onComplete: () => setDone(true),
     });
@@ -68,10 +62,8 @@ export function Intro({ config }: IntroProps) {
         width={491}
         height={41}
         unoptimized
-        preload
         draggable={false}
         className={styles.wordmark}
-        style={{ filter: `url(#${FILTER_ID})` }}
       />
 
       <Image
@@ -83,36 +75,7 @@ export function Intro({ config }: IntroProps) {
         unoptimized
         draggable={false}
         className={styles.symbol}
-        style={{ filter: `url(#${FILTER_ID})` }}
       />
-
-      <svg className={styles.defs} focusable="false">
-        <filter
-          id={FILTER_ID}
-          x="-20%"
-          y="-120%"
-          width="140%"
-          height="340%"
-          colorInterpolationFilters="sRGB"
-        >
-          <feTurbulence
-            ref={turbulenceRef}
-            type="fractalNoise"
-            baseFrequency="0.006 0.03"
-            numOctaves={2}
-            seed={7}
-            result="noise"
-          />
-          <feDisplacementMap
-            ref={displacementRef}
-            in="SourceGraphic"
-            in2="noise"
-            scale={0}
-            xChannelSelector="R"
-            yChannelSelector="G"
-          />
-        </filter>
-      </svg>
     </div>
   );
 }

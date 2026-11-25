@@ -10,6 +10,11 @@ html[data-intro="play"] [data-intro-hide] {
   visibility: hidden;
 }
 
+/* A flor é revelada durante a migração: camada própria na GPU. */
+html[data-intro="play"] [data-intro-hide="flower"] {
+  will-change: opacity, transform;
+}
+
 /* Salvaguarda: sem JavaScript, o conteúdo reaparece após alguns segundos. */
 html[data-intro="play"]:not([data-intro-js]) [data-intro-hide] {
   animation: intro-failsafe-reveal 600ms ease 6s forwards;
