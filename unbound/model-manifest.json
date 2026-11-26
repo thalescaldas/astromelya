@@ -1,0 +1,34 @@
+{
+  "entity": "The Unbound",
+  "units": "escala arbitrária (entidade ≈ 2 unidades)",
+  "up": "+Y (glTF)",
+  "mesh": "unbound (malha única)",
+  "vertices": 22192,
+  "triangles": 39644,
+  "membranes": 8,
+  "membrane_grid": [
+    52,
+    23
+  ],
+  "core_grid": [
+    40,
+    18
+  ],
+  "states": {
+    "basis": "origin",
+    "morph_targets": [
+      "essence",
+      "beyond_form",
+      "metamorphosis",
+      "unknown"
+    ]
+  },
+  "attributes": {
+    "_MEMBRANE": "0 = núcleo; 1–8 = membrana",
+    "_ANCHOR": "1 na raiz (fixa) → 0 a partir de ~12% do comprimento",
+    "_FLEX": "0 rígido na raiz → 1 na extremidade",
+    "_EDGE": "0 na nervura central → 1 na borda",
+    "_STIFFNESS": "rigidez local (raiz e nervura mais rígidas; bordas e pontas flexíveis)",
+    "TEXCOORD_0": "u = largura (0–1), v = raiz → ponta (0–1), contínuo por membrana"
+  }
+}
