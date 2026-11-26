@@ -1,13 +1,21 @@
 import type { Metadata } from "next";
-import { StubPage } from "@/components/page/StubPage";
+import { AboutPage } from "@/components/about/AboutPage";
+import { SiteHeader } from "@/components/header/SiteHeader";
 import { routes } from "@/config/site";
 
 export const metadata: Metadata = {
   title: "About",
+  description: "Astromelya is an independent creative universe.",
   alternates: { canonical: routes.about },
 };
 
-/** Estrutura inicial — conteúdo a ser definido após aprovação da direção artística. */
-export default function AboutPage() {
-  return <StubPage title="About" route={routes.about} />;
+export default function About() {
+  return (
+    <>
+      <SiteHeader current={routes.about} />
+      <main>
+        <AboutPage />
+      </main>
+    </>
+  );
 }

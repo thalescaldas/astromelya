@@ -1,0 +1,228 @@
+/*
+ * About — Creative Universe
+ * Sistema visual: Void #000 · Shadow #151515 · Mist #808080 · Silver #D9D9D9 · Light #FFF
+ * Títulos Manrope 300 (36–52 px mobile, 72–112 px desktop) · textos Manrope 400 (16–20 px)
+ * Numeração IBM Plex Mono · margens 24 px (mobile) / 8vw (desktop)
+ */
+.manifest {
+  --about-margin: 24px;
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+@media (min-width: 768px) {
+  .manifest {
+    --about-margin: 8vw;
+  }
+}
+
+/* ── Escultura: camada fixa contínua (espaço reservado discreto) ───────── */
+.sculpture {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 22vmax 26vmax at 50% 34%,
+    rgba(255, 255, 255, 0.035) 0%,
+    rgba(21, 21, 21, 0.55) 38%,
+    rgba(0, 0, 0, 0) 72%
+  );
+}
+
+@media (min-width: 900px) {
+  .sculpture {
+    background: radial-gradient(
+      ellipse 20vmax 24vmax at 70% 52%,
+      rgba(255, 255, 255, 0.035) 0%,
+      rgba(21, 21, 21, 0.55) 38%,
+      rgba(0, 0, 0, 0) 72%
+    );
+  }
+}
+
+/* Preserva a leitura sob o cabeçalho fixo durante a rolagem. */
+.headerFade {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 5;
+  height: clamp(5.5rem, 12vh, 8rem);
+  pointer-events: none;
+  background: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.85) 45%, rgba(0, 0, 0, 0) 100%);
+}
+
+/* ── Capítulos ─────────────────────────────────────────────────────────── */
+.chapter {
+  position: relative;
+  display: flex;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: clamp(7rem, 16vh, 10rem) var(--about-margin) clamp(4rem, 12vh, 8rem);
+}
+
+.copy {
+  max-width: min(100%, 15.5em);
+  font-size: clamp(2.25rem, 1.1rem + 5.3vw, 7rem); /* referência em em para a largura da coluna */
+}
+
+.copy > * {
+  font-size: 1rem;
+}
+
+.copy > .title {
+  font-size: clamp(2.25rem, 1.1rem + 5.3vw, 7rem);
+}
+
+/* Composição assimétrica: posição e recuo variam por capítulo. */
+.chapter1 {
+  align-items: flex-end;
+  min-height: 100svh;
+}
+
+.chapter2 {
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.chapter3 {
+  align-items: flex-start;
+  padding-top: clamp(9rem, 26vh, 16rem);
+}
+
+.chapter4 {
+  align-items: flex-end;
+}
+
+.chapter5 {
+  align-items: center;
+  min-height: 90svh;
+}
+
+@media (min-width: 900px) {
+  .chapter2 .copy {
+    margin-left: 6vw;
+  }
+
+  .chapter4 .copy {
+    margin-left: 12vw;
+  }
+
+  .chapter5 .copy {
+    margin-left: 3vw;
+  }
+}
+
+/* ── Tipografia ────────────────────────────────────────────────────────── */
+.number {
+  display: flex;
+  gap: 0.15em;
+  margin-bottom: clamp(1.25rem, 3vh, 2rem);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-gray-500);
+}
+
+.label {
+  color: var(--color-gray-500);
+}
+
+.title {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  color: var(--color-white);
+  text-wrap: balance;
+}
+
+.line {
+  display: block;
+}
+
+.body {
+  max-width: 34ch;
+  margin-top: clamp(1.25rem, 3.5vh, 2.25rem);
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 0.9rem + 0.4vw, 1.25rem);
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--color-gray-200);
+}
+
+.body + .body {
+  margin-top: 0.4em;
+}
+
+/* ── Indicador de rolagem ──────────────────────────────────────────────── */
+.scrollHint {
+  position: absolute;
+  right: var(--about-margin);
+  bottom: clamp(2rem, 6vh, 3.5rem);
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-gray-500);
+}
+
+.hintLine {
+  display: block;
+  width: clamp(1.5rem, 4vw, 3rem);
+  height: 1px;
+  background: var(--color-gray-500);
+}
+
+/* ── Assinatura (etapa B) ──────────────────────────────────────────────── */
+.signature {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-top: clamp(2.5rem, 7vh, 4.5rem);
+}
+
+.signatureLabel {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-gray-500);
+}
+
+.signatureSlot {
+  width: clamp(6.5rem, 12vw, 9rem);
+  aspect-ratio: 2 / 1;
+  border-bottom: 1px solid var(--color-gray-900);
+}
+
+/* ── Encerramento ──────────────────────────────────────────────────────── */
+.explore {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.45em;
+  margin-top: clamp(2rem, 6vh, 3.5rem);
+  padding: 0.5rem 0;
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 0.9rem + 0.4vw, 1.25rem);
+  font-weight: 400;
+  color: var(--color-gray-200);
+  border-bottom: 1px solid var(--color-gray-500);
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.explore:hover {
+  color: var(--color-white);
+  border-color: var(--color-white);
+}
+
+.arrow {
+  font-size: 0.9em;
+}
