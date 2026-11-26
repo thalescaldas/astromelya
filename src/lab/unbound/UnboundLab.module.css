@@ -7,3 +7,24 @@
   user-select: none;
   -webkit-user-select: none;
 }
+
+.pane {
+  position: absolute;
+  inset: 0;
+}
+
+.left {
+  right: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.right {
+  left: 50%;
+}
+
+.reference {
+  max-width: 92%;
+  max-height: 92%;
+  object-fit: contain;
+}

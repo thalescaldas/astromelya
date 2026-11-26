@@ -1,20 +1,21 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LAB_UNBOUND, parseParams } from "./config";
+import { LAB_UNBOUND, parseParams, type UnboundParams } from "./config";
 import styles from "./UnboundLab.module.css";
 
 /**
- * Laboratório The Unbound (/lab/unbound). Sem controles visíveis.
- *   ?view=origin | essence | beyond-form | metamorphosis | unknown — um estado
- *   ?view=compare   — os cinco estados lado a lado
- *   ?view=wireframe — topologia (&state=… para escolher o estado)
- *   ?view=inspect   — rotação/zoom livres; teclas 1–5 alternam os estados
- *   &look=ethereal  — prévia de membrana translúcida (diagnóstico)
+ * The Unbound Hybrid — Beyond Form (/lab/unbound). No visible controls.
+ *   (default) / ?view=beauty — translucent membrane, cinematic light
+ *   ?view=clay       — neutral material (anatomy)
+ *   ?view=wireframe  — topology
+ *   ?view=inspect    — free rotation/zoom (&look=clay for neutral)
+ *   ?view=compare    — official concept (left) × model (right)
+ *   &variant=A|B|C   — volumetric study variants
  */
 export function UnboundLab() {
   const ref = useRef<HTMLDivElement>(null);
-  const [params, setParams] = useState<ReturnType<typeof parseParams> | null>(null);
+  const [params, setParams] = useState<UnboundParams | null>(null);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -32,14 +33,11 @@ export function UnboundLab() {
       if (cancelled) return;
       scene = createUnboundScene({
         container,
-        view: params.view,
-        state: params.view === "wireframe" || params.view === "inspect" ? params.state : params.view === "compare" ? "origin" : params.view,
-        look: params.look,
+        params: params.view === "compare" ? { ...params, view: "beauty" } : params,
         onReady: (info) => {
           container.dataset.ready = "true";
           container.dataset.vertices = String(info.vertices);
           container.dataset.triangles = String(info.triangles);
-          container.dataset.morphTargets = String(info.morphTargets);
         },
       });
       onResize();
@@ -52,5 +50,16 @@ export function UnboundLab() {
     };
   }, [params]);
 
-  return <div ref={ref} className={styles.stage} data-view={params?.view ?? ""} />;
+  const compare = params?.view === "compare";
+  return (
+    <div className={styles.stage} data-view={params?.view ?? ""}>
+      {compare && (
+        <div className={`${styles.pane} ${styles.left}`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={LAB_UNBOUND.reference.src} alt="" className={styles.reference} />
+        </div>
+      )}
+      <div ref={ref} className={`${styles.pane} ${compare ? styles.right : ""}`} />
+    </div>
+  );
 }

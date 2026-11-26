@@ -1,66 +1,77 @@
-# The Unbound — escultura orgânica do About
+# The Unbound Hybrid — Beyond Form (etapa C.1)
 
-Entidade tridimensional abstrata (Organic + Ethereal) baseada na concept art oficial.
-Gerada no Blender (módulo `bpy`) por scripts Python. **Estado: protótipo de geometria**
-(material neutro provisório; sem texturas, física, respiração ou rolagem).
+Escultura do About. Direção: **Singularity + Unknown Anatomy + Ascension**.
+Estado desenvolvido: **03 — Beyond Form** (expansão máxima). Os outros quatro estados,
+a física, a respiração e a rolagem ainda **não** foram implementados.
 
-Separado da Genesis: nada aqui é usado pela Home nem pelo About público.
+Protótipo anterior (8 membranas em torno de um núcleo — rejeitado por lembrar uma flor):
+`archive/membranes-v1/` e branch `backup/unbound-membranes-v1`.
+
+## Estratégia de modelagem: geometria implícita (campos de distância)
+
+| Etapa | Técnica |
+|---|---|
+| Superfície principal | **folha de superfície mínima** (giroide, ~2 células) com o domínio deformado: alongamento vertical, torção, curvatura em S e ondulação de baixa frequência |
+| Envelope | lobos elipsoidais em S + chifres afilados (crescentes); a folha é recortada pelo envelope com *smooth max* → bordas arredondadas e tensionadas |
+| Vazio principal | elipsoide subtraído no centro (Singularity) |
+| Extremidades | a folha preenche os chifres e se estreita até a ponta; um filete fino ao longo de cada chifre garante a continuidade |
+| Espessura | variável: ~0,058 no núcleo → ~0,030 nas regiões externas |
+| Malha | marching cubes (voxel 0,012) → Blender: fusão, remoção de fragmentos, suavização Laplaciana com preservação de volume, redução a 60 000 triângulos, UV (Smart UV Project), atributos |
+
+A superfície mínima produz naturalmente o que a referência pede: cavidades reais que
+atravessam a entidade, selas tensionadas, conexões entre regiões e um corpo contínuo.
+
+### Variações estudadas (`public/lab/unbound/study/`, `?variant=A|B|C`)
+
+| | Superfície | Resultado |
+|---|---|---|
+| **A — Singularity** | giroide + vazio central | vazio dominante + cavidades secundárias, conexões contínuas → **escolhida** |
+| B — Lattice | Schwarz P | cavidades regulares e arredondadas demais; lembra estrutura industrial |
+| C — Ascension | giroide alongado e mais torcido | fragmenta-se em "cortinas"; perde o vazio dominante |
+
+Também foi testada (e descartada) uma casca perfurada de envelope convexo: lia-se como
+uma cápsula com furos e chifres.
 
 ## Arquivos
 
 ```
 unbound/
 ├── scripts/
-│   ├── geometry.py       geometria paramétrica: núcleo + 8 membranas, 5 estados
-│   ├── build_blender.py  cena Blender (Basis + 4 shape keys) e exportação GLB
-│   └── check.py          morph targets (contagem, NaN, normais) e interseções
-├── blender/unbound.blend malha única editável com shape keys
-└── model-manifest.json   contagens, estados e atributos
-public/lab/unbound/unbound.glb   modelo com 4 morph targets (posição + normal)
+│   ├── hybrid_field.py   campos: TPMS, deformação, envelope, chifres, vazio, variações
+│   ├── mesh_variant.py   avalia o campo na grade e extrai a superfície (marching cubes)
+│   └── build_hybrid.py   Blender: limpeza, redução, UV, atributos, verificações, .blend + GLB
+├── blender/the-unbound-beyond-form.blend
+└── archive/membranes-v1/ protótipo anterior (scripts, .blend, GLB)
+public/lab/unbound/
+├── beyond-form.glb       modelo do laboratório
+├── study/beyond-form-{A,B,C}.glb
+└── reference/beyond-form.png  recorte da prancha oficial (somente laboratório)
 ```
 
-Regenerar (Python com `bpy`, `numpy`, `scipy`):
+Regenerar (Python com `bpy`, `numpy`, `scikit-image`):
 
 ```bash
 cd unbound/scripts
-python build_blender.py
-python check.py ../../public/lab/unbound/unbound.glb
+python mesh_variant.py A /tmp/A.npz 0.012
+python build_hybrid.py A /tmp/A.npz ../../public/lab/unbound/beyond-form.glb ../blender/the-unbound-beyond-form.blend 60000
 ```
 
-## Anatomia
+## Topologia e atributos (preparação para morph targets e física)
 
-| Parte | Descrição |
-|---|---|
-| Núcleo | haste curta e afilada (quase oculta) de onde todas as membranas nascem — continuidade anatômica |
-| Membranas 1–3 | externas, longas e largas (L ≈ 1,4–1,55) |
-| Membranas 4–6 | intermediárias (L ≈ 1,05–1,15) |
-| Membranas 7–8 | internas, pequenas (L ≈ 0,75–0,8) |
+- Malha única, contínua, triangular, 29 986 vértices / 60 000 triângulos; 0 arestas não
+  manifold; 0 pares de faces com auto-interseção (verificado no build).
+- Futuros estados = deformações desta mesma malha (mesma ordem de vértices); a geometria
+  atual é a geometria de repouso.
+- `TEXCOORD_0`: ilhas contínuas (Smart UV Project).
+- `_REGION`: 0 = membrana, 1 = borda tensionada (recorte do envelope/vazio), 2 = extremidade.
+- `_ANCHOR`: 1 no núcleo denso (centro) → 0 a ~0,5 unidade.
+- `_FLEX`: 0 no núcleo → 1 nas extremidades.
+- `_STIFFNESS`: rigidez local (núcleo e bordas mais rígidos).
 
-Cada membrana: lâmina com espessura real (face superior, inferior e borda fechada), largura em
-chama (máximo a ~25–30 % do comprimento, ponta longa), concha transversal, ondulações nas bordas,
-contracurva em S e gancho na extremidade, nervura central e fibras longitudinais em relevo.
-Espessura variável: ~0,013 na raiz e na nervura → ~0,001 nas bordas e na ponta.
+## Material translúcido preliminar (`src/lab/unbound/membrane.ts`)
 
-## Estados (mesma topologia e ordem de vértices)
-
-| Estado | Shape key / morph target | Forma |
-|---|---|---|
-| Origin | Basis (sem morph) | botão compacto em chama; membranas em camadas envolvendo o núcleo |
-| Essence | `essence` (índice 0) | primeiras membranas se abrem para a direita; interior revelado |
-| Beyond Form | `beyond_form` (1) | expansão máxima, assimétrica, membranas em várias direções com pontas em gancho |
-| Metamorphosis | `metamorphosis` (2) | torção dos azimutes; metade das membranas dobra sobre a entidade |
-| The Unknown | `unknown` (3) | alongada e ascendente, membranas estreitas como fumaça |
-
-Os morph targets são relativos à Basis. Estado k: influência 1 no índice k; transições:
-interpolação linear entre os pesos de estados vizinhos.
-
-## Topologia e atributos de deformação
-
-- Malha única `unbound`: 22 192 vértices, 39 644 triângulos.
-- Membrana: grade regular 52 (raiz → ponta) × 23 (borda → borda), face superior e inferior
-  com vértices próprios na borda (sombreamento nítido). Núcleo: 40 × 18.
-- `TEXCOORD_0`: u = largura (0–1), v = raiz → ponta (0–1), contínuo por membrana.
-- `_MEMBRANE` (0 = núcleo, 1–8), `_ANCHOR` (1 na raiz), `_FLEX` (0 raiz → 1 ponta),
-  `_EDGE` (0 nervura → 1 borda), `_STIFFNESS` (rigidez local).
-- Geometria de repouso = posição do estado atual (base + morph); a física futura somará
-  deslocamentos a ela, permitindo combinar metamorfose e deformação.
+Shader próprio, mistura **aditiva sem escrita de profundidade** (independente de ordem →
+sem artefatos de ordenação de transparência; camadas sobrepostas ficam mais densas):
+densidade base baixa + Fresnel (bordas e superfícies rasantes) + microfibras direcionais
+(listras seguindo a torção da entidade) + luz lateral suave + atenuação por profundidade.
+Parâmetros em `src/lab/unbound/config.ts` (`membrane`).

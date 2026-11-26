@@ -1,14 +1,15 @@
-# Laboratório The Unbound
+# Laboratório — The Unbound Hybrid
 
 Rota isolada `/lab/unbound` (não indexada, sem links públicos). Sem controles visíveis.
 
 | URL | Modo |
 |---|---|
-| `/lab/unbound` | Beyond Form |
-| `?view=origin` · `essence` · `beyond-form` · `metamorphosis` · `unknown` | um estado |
-| `?view=compare` | os cinco estados lado a lado (mesma escala) |
-| `?view=wireframe&state=…` | topologia |
-| `?view=inspect&state=…` | rotação/zoom livres; teclas 1–5 alternam os estados (morph) |
-| `&look=ethereal` | prévia de membrana translúcida — diagnóstico, não é o material final |
+| `/lab/unbound` ou `?view=beauty` | Beyond Form, membrana translúcida + luz cinematográfica |
+| `?view=clay` | material neutro (anatomia) |
+| `?view=wireframe` | topologia |
+| `?view=inspect` | rotação/zoom livres (`&look=clay` para neutro) |
+| `?view=compare` | conceito oficial (esquerda) × modelo (direita) |
+| `&variant=A\|B\|C` | variações volumétricas estudadas |
 
-Modelo: `public/lab/unbound/unbound.glb` (gerado por `unbound/scripts/build_blender.py`).
+Modelo: `public/lab/unbound/beyond-form.glb`, gerado por `unbound/scripts/build_hybrid.py`.
+Protótipo anterior (8 membranas): `unbound/archive/membranes-v1/` e branch `backup/unbound-membranes-v1`.
