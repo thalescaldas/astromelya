@@ -1,5 +1,7 @@
 /**
- * Genesis viva — parâmetros do campo de partículas, parallax e gravidade.
+ * Genesis viva — parâmetros do campo de partículas e da gravidade.
+ * (O parallax foi removido na preparação para a Genesis 3D; a versão com
+ * parallax está preservada na branch backup/genesis-2d.)
  * Fonte única para refinamentos. Distâncias relativas usam a largura da
  * fotografia exibida (`w`), para que a composição seja igual em qualquer tela.
  */
@@ -51,15 +53,6 @@ export const FIELD = {
     saveInterval: 2,
     /** Maior passo de tempo contabilizado por quadro (s): ignora travamentos. */
     maxStep: 0.25,
-  },
-
-  parallax: {
-    /** Deslocamento máximo (px CSS). */
-    far: 6,
-    flower: 8,
-    near: 20,
-    /** Constante de suavização (1/s): maior = responde mais rápido. */
-    smoothing: 2.4,
   },
 
   gravity: {

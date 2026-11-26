@@ -1,0 +1,23 @@
+/* Área de renderização em tela cheia; referência centralizada (sem rolagem). */
+.stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Centralização exata mesmo quando a referência é mais larga que a tela (celular). */
+.reference {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(calc(100dvh * var(--reference-ratio) * var(--reference-height)), 175vw);
+  max-width: none;
+  height: auto;
+  pointer-events: none;
+}

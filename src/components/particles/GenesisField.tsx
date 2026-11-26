@@ -29,7 +29,6 @@ export function GenesisField({ maskSrc, children }: GenesisFieldProps) {
       controller = runField({
         canvas,
         maskSrc,
-        figure,
         image,
         waitForBloom: document.documentElement.getAttribute("data-bloom") === "play",
         reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,

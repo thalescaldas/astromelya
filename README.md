@@ -65,17 +65,22 @@ Em `src/config/evolution.ts`, altere `ACTIVE_PHASE_ID` para `"metamorphosis"`.
   longo de 180 s de permanência visível (`progress = (elapsed / 180)^1.4`), cada uma com fade-in de
   4–8 s e já em órbita. O tempo só conta com a Home aberta e visível, é preservado na sessão
   (`sessionStorage`) ao navegar e recomeça em uma nova sessão.
-- **Parallax** em três profundidades (partículas distantes, flor, partículas próximas), com interpolação
-  exponencial e limite circular. O cabeçalho é estático.
+- **Sem parallax**: a flor e o campo de partículas são fixos (preparação para a Genesis 3D). A versão
+  com parallax está preservada na branch `backup/genesis-2d`.
 - **Gravidade secreta**: pressionar e segurar a flor (mouse ou toque) atrai as partículas para o coração
   da flor; ao soltar, retornam às órbitas. Integração com mola criticamente amortecida: posição e
   velocidade contínuas.
-- **Parâmetros**: `src/config/field.ts` (quantidade, tamanhos, órbitas, parallax, gravidade, desempenho).
+- **Parâmetros**: `src/config/field.ts` (quantidade, tamanhos, órbitas, gravidade, desempenho).
 - Ciclo único `requestAnimationFrame`, sem estado React por quadro; pausa com a aba oculta; recursos
-  liberados ao sair da Home. Movimento reduzido: quadro estático, sem parallax nem gravidade.
+  liberados ao sair da Home. Movimento reduzido: quadro estático, sem gravidade.
 
 ### Introdução cinematográfica (descontinuada)
 
 Os arquivos da antiga introdução (nome → partículas → símbolo) foram preservados em
 `src/components/intro`, `src/components/particles` e `src/animations/intro*.ts`, mas não são importados
 nem carregados (`animations.intro.enabled: false` em `src/config/evolution.ts`).
+
+### Laboratório Genesis 3D
+
+Rota experimental `/lab/genesis` (não indexada, sem links públicos) — ver `src/lab/genesis/README.md`.
+A experiência 2D aprovada (com parallax) está preservada na branch `backup/genesis-2d`.

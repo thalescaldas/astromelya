@@ -5,8 +5,8 @@ import { FIELD } from "@/config/field";
  * ------------
  * Campo de partículas em uma camada Canvas 2D desenhada sobre a fotografia e
  * recortada por uma máscara de oclusão da silhueta da Genesis: todas as
- * partículas (e seus halos) ficam atrás da flor. Parallax em três
- * profundidades e um campo gravitacional secreto ao pressionar a flor.
+ * partículas (e seus halos) ficam atrás da flor. A flor permanece fixa (sem
+ * parallax); um campo gravitacional secreto age ao pressionar a flor.
  * Um único ciclo requestAnimationFrame; nenhum estado React por quadro.
  *
  * Física: cada partícula tem uma órbita "natural" (elipse inclinada com ondulação
@@ -20,8 +20,6 @@ export interface FieldElements {
   canvas: HTMLCanvasElement;
   /** Silhueta da flor (alfa), mesma geometria da fotografia. */
   maskSrc: string;
-  /** Figura da flor (recebe o parallax intermediário). */
-  figure: HTMLElement;
   /** Fotografia oficial (referência de posição e escala). */
   image: HTMLImageElement;
 }
@@ -158,7 +156,7 @@ function saveElapsed(value: number) {
 }
 
 export function runField(options: FieldOptions): FieldController {
-  const { canvas, figure, image, reducedMotion } = options;
+  const { canvas, image, reducedMotion } = options;
   const ctx = canvas.getContext("2d");
   if (!ctx) return { dispose() {} };
 
@@ -192,10 +190,6 @@ export function runField(options: FieldOptions): FieldController {
   let imgHeight = 0;
 
   // Interação
-  let pointerX = 0;
-  let pointerY = 0;
-  let px = 0; // parallax suavizado (-1..1)
-  let py = 0;
   let pressed = false;
   let gRaw = 0;
 
@@ -204,8 +198,6 @@ export function runField(options: FieldOptions): FieldController {
   let last = 0;
   let clock = 0;
   let emergeAt = options.waitForBloom ? Number.POSITIVE_INFINITY : 0.25;
-  let flowerX = 0;
-  let flowerY = 0;
 
   // Desempenho
   let sampled = 0;
@@ -218,11 +210,11 @@ export function runField(options: FieldOptions): FieldController {
     dpr = Math.min(window.devicePixelRatio || 1, FIELD.performance.maxPixelRatio);
     canvas.width = Math.round(vw * dpr);
     canvas.height = Math.round(vh * dpr);
-    // A figura pode estar deslocada pelo parallax: desconta o deslocamento atual.
+    // Posição fixa da fotografia (sem parallax): a máscara usa exatamente esta caixa.
     const rect = image.getBoundingClientRect();
     w = rect.width || vw;
-    imgLeft = rect.left - flowerX;
-    imgTop = rect.top - flowerY;
+    imgLeft = rect.left;
+    imgTop = rect.top;
     imgHeight = rect.height;
     cx = imgLeft + FIELD.center.x * rect.width;
     cy = imgTop + FIELD.center.y * rect.height;
@@ -321,7 +313,6 @@ export function runField(options: FieldOptions): FieldController {
   };
 
   const draw = (g: number) => {
-    const PX = FIELD.parallax;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, vw, vh);
     // Sem máscara, nenhuma partícula é desenhada (nunca sobre a flor).
@@ -332,15 +323,10 @@ export function runField(options: FieldOptions): FieldController {
       const p = particles[i];
       const appear = p.appear;
       if (appear <= 0) continue;
-      // profundidade 0 (distante) … 1 (próxima): define tamanho, brilho e parallax
+      // profundidade 0 (distante) … 1 (próxima): define tamanho e brilho
       const depth = (p.z + 1) / 2;
-      // Parallax contínuo pela profundidade: fundo (far) → plano da flor → frente (near).
-      const parallax =
-        depth < 0.5
-          ? PX.far * 0.5 + (PX.flower - PX.far * 0.5) * (depth * 2)
-          : PX.flower + (PX.near - PX.flower) * ((depth - 0.5) * 2);
-      const sx = cx + p.x - px * parallax;
-      const sy = cy + p.y - py * parallax;
+      const sx = cx + p.x;
+      const sy = cy + p.y;
       const twinkle = 1 - P.twinkle.depth * (0.5 + 0.5 * Math.sin(clock * TAU * p.twinkleFreq + p.twinklePhase));
       const glow = 1 + FIELD.gravity.glow * g;
       const scale = 0.75 + 0.5 * depth;
@@ -356,21 +342,11 @@ export function runField(options: FieldOptions): FieldController {
     ctx.globalAlpha = 1;
 
     // Oclusão: apaga tudo o que cai sobre a silhueta (partículas e halos),
-    // na posição exata da flor com o parallax deste quadro.
+    // na posição exata (e fixa) da fotografia.
     ctx.globalCompositeOperation = "destination-out";
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.drawImage(maskCanvas, (imgLeft + flowerX) * dpr, (imgTop + flowerY) * dpr);
+    ctx.drawImage(maskCanvas, imgLeft * dpr, imgTop * dpr);
     ctx.globalCompositeOperation = "source-over";
-  };
-
-  const applyFlowerParallax = () => {
-    const tx = Math.round(-px * FIELD.parallax.flower * 100) / 100;
-    const ty = Math.round(-py * FIELD.parallax.flower * 100) / 100;
-    if (tx !== flowerX || ty !== flowerY) {
-      flowerX = tx;
-      flowerY = ty;
-      figure.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
-    }
   };
 
   const frame = (now: number) => {
@@ -402,11 +378,6 @@ export function runField(options: FieldOptions): FieldController {
       }
     }
 
-    // parallax suavizado (interpolação exponencial contínua)
-    const k = 1 - Math.exp(-dt * FIELD.parallax.smoothing);
-    px += (pointerX - px) * k;
-    py += (pointerY - py) * k;
-    applyFlowerParallax();
 
     const g = step(dt);
     draw(g);
@@ -430,24 +401,9 @@ export function runField(options: FieldOptions): FieldController {
     if (reducedMotion) draw(0);
   };
 
-  const onPointerMove = (e: PointerEvent) => {
-    if (e.pointerType === "mouse") {
-      let nx = (e.clientX / vw) * 2 - 1;
-      let ny = (e.clientY / vh) * 2 - 1;
-      // Limite circular: o deslocamento máximo vale em qualquer direção (inclusive diagonais).
-      const length = Math.hypot(nx, ny);
-      if (length > 1) {
-        nx /= length;
-        ny /= length;
-      }
-      pointerX = nx;
-      pointerY = ny;
-    }
-  };
-
   const insideFlower = (x: number, y: number) => {
-    const dx = (x - cx - flowerX) / (FIELD.gravity.hitRadius.x * w);
-    const dy = (y - cy - flowerY) / (FIELD.gravity.hitRadius.y * w);
+    const dx = (x - cx) / (FIELD.gravity.hitRadius.x * w);
+    const dy = (y - cy) / (FIELD.gravity.hitRadius.y * w);
     return dx * dx + dy * dy <= 1;
   };
 
@@ -485,11 +441,10 @@ export function runField(options: FieldOptions): FieldController {
   maskImage.src = options.maskSrc;
 
   if (reducedMotion) {
-    // Movimento reduzido: um único quadro estático, sem parallax nem gravidade.
+    // Movimento reduzido: um único quadro estático, sem gravidade.
     emergeAt = -100;
     clock = 0;
   } else {
-    window.addEventListener("pointermove", onPointerMove, { passive: true });
     window.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("pointerup", release);
     window.addEventListener("pointercancel", release);
@@ -503,7 +458,6 @@ export function runField(options: FieldOptions): FieldController {
   return {
     dispose() {
       stop();
-      window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("pointerup", release);
       window.removeEventListener("pointercancel", release);
@@ -511,7 +465,6 @@ export function runField(options: FieldOptions): FieldController {
       window.removeEventListener(BLOOM_SETTLING_EVENT, onSettling);
       window.removeEventListener("resize", onResize);
       document.removeEventListener("visibilitychange", onVisibility);
-      figure.style.transform = "";
       maskImage.onload = null;
       canvas.width = 0;
       canvas.height = 0;
