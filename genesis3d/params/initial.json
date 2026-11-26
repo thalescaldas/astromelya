@@ -1,0 +1,32 @@
+{
+  "camera": { "fov": 30, "position": [0, 0, 4], "image": [1672, 941] },
+  "targets": {
+    "base": [0.39, 0.66],
+    "throat": [0.46, 0.56],
+    "stem_end": [0.31, 0.985],
+    "tips": { "A": [0.24, 0.2], "B": [0.57, 0.06], "C": [0.73, 0.45], "D": [0.63, 0.92], "E": [0.36, 0.43] },
+    "anthers": [[0.53, 0.44], [0.565, 0.4], [0.6, 0.42], [0.585, 0.49], [0.6, 0.49]]
+  },
+  "global": {
+    "yaw": 29, "pitch": 20, "roll": 0,
+    "base": [-0.42, -0.34, 0.0],
+    "ring": 0.035,
+    "stem": { "pull": 0.35, "end": [-0.62, -1.15, 0.05], "end_tangent": [0.05, 0.45, 0.0], "radius": 0.03 }
+  },
+  "tepals": {
+    "A": { "whorl": "outer", "azimuth": 62,  "beta0": 22, "beta1": 118, "bend_power": 1.5, "length": 1.35, "width": 0.34, "widest": 0.55, "cup": 0.25, "twist": -15, "tip_curl": 25, "asym": 0.08, "ruffle": 0.03, "ruffle_freq": 4.0, "tip_round": 0.65 },
+    "B": { "whorl": "inner", "azimuth": 2,   "beta0": 18, "beta1": 62,  "bend_power": 1.7, "length": 1.4,  "width": 0.3,  "widest": 0.5,  "cup": 0.2,  "twist": 5,   "tip_curl": 10, "asym": -0.06, "ruffle": 0.015, "ruffle_freq": 3.0, "tip_round": 0.85 },
+    "C": { "whorl": "outer", "azimuth": -78, "beta0": 25, "beta1": 98,  "bend_power": 1.5, "length": 1.35, "width": 0.28, "widest": 0.55, "cup": 0.3,  "twist": 10,  "tip_curl": 15, "asym": 0.05, "ruffle": 0.045, "ruffle_freq": 5.5, "tip_round": 0.7 },
+    "F": { "whorl": "inner", "azimuth": -38, "beta0": 20, "beta1": 70,  "bend_power": 1.6, "length": 1.2,  "width": 0.2,  "widest": 0.5,  "cup": 0.25, "twist": 0,   "tip_curl": 10, "asym": 0.04, "ruffle": 0.02, "ruffle_freq": 4.0, "tip_round": 0.85 },
+    "D": { "whorl": "outer", "azimuth": 195, "beta0": 25, "beta1": 112, "bend_power": 1.4, "length": 1.3,  "width": 0.3,  "widest": 0.5,  "cup": 0.35, "twist": -12, "tip_curl": 35, "asym": -0.07, "ruffle": 0.025, "ruffle_freq": 3.5, "tip_round": 0.6 },
+    "E": { "whorl": "inner", "azimuth": 128, "beta0": 20, "beta1": 55,  "bend_power": 1.8, "length": 0.95, "width": 0.24, "widest": 0.45, "cup": 0.45, "twist": 20,  "tip_curl": -10, "asym": 0.1, "ruffle": 0.02, "ruffle_freq": 3.0, "tip_round": 0.7 }
+  },
+  "stamens": [
+    { "azimuth": -8,  "length": 0.62, "spread": 0.18, "lift": 0.06 },
+    { "azimuth": -22, "length": 0.7,  "spread": 0.22, "lift": 0.08 },
+    { "azimuth": -40, "length": 0.72, "spread": 0.2,  "lift": 0.07 },
+    { "azimuth": -60, "length": 0.66, "spread": 0.17, "lift": 0.05 },
+    { "azimuth": -75, "length": 0.64, "spread": 0.15, "lift": 0.05 },
+    { "azimuth": 20,  "length": 0.55, "spread": 0.12, "lift": 0.03 }
+  ]
+}

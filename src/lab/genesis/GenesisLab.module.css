@@ -1,4 +1,4 @@
-/* Área de renderização em tela cheia; referência centralizada (sem rolagem). */
+/* Área de renderização em tela cheia; fundo preto absoluto; sem rolagem. */
 .stage {
   position: fixed;
   inset: 0;
@@ -10,13 +10,31 @@
   -webkit-touch-callout: none;
 }
 
-/* Centralização exata mesmo quando a referência é mais larga que a tela (celular). */
+.pane {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* tamanho da referência calculado sobre o painel (container queries) */
+  container-type: size;
+}
+
+/* Comparação: duas metades com o mesmo enquadramento. */
+.half {
+  right: 50%;
+}
+
+.right {
+  left: 50%;
+  right: 0;
+}
+
+/* Centralização exata mesmo quando a referência é mais larga que o painel (celular). */
 .reference {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(calc(100dvh * var(--reference-ratio) * var(--reference-height)), 175vw);
+  width: min(calc(100cqh * var(--reference-ratio) * var(--reference-height)), 175cqw);
   max-width: none;
   height: auto;
   pointer-events: none;

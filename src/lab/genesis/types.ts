@@ -1,9 +1,7 @@
 /**
  * Contrato de um "estágio" do laboratório: quem desenha a Genesis.
- *
- * Hoje existe apenas o estágio de referência (fotografia). O futuro estágio 3D
- * implementará a mesma interface, carregado sob demanda (import dinâmico), de
- * modo que Three.js e o modelo glTF nunca entrem no pacote da Home.
+ * O estágio 3D é carregado sob demanda (import dinâmico), de modo que
+ * Three.js e o modelo glTF nunca entram no pacote da Home.
  */
 export interface LabStage {
   /** Ajusta a área de renderização (px CSS e devicePixelRatio já limitado). */
@@ -12,9 +10,17 @@ export interface LabStage {
   dispose(): void;
 }
 
-export type LabStageKind = "reference";
+export type LabStageKind = "reference" | "three";
 
 export interface LabStageContext {
-  /** Contêiner em tela cheia onde o estágio desenha. */
+  /** Contêiner onde o estágio desenha. */
   container: HTMLElement;
+}
+
+export interface ThreeStageOptions extends LabStageContext {
+  wireframe: boolean;
+  /** Inspeção livre (OrbitControls); câmera fixa nos demais modos. */
+  inspect: boolean;
+  /** Chamado quando o modelo termina de carregar (diagnóstico). */
+  onReady?: (info: { meshes: number; vertices: number; triangles: number }) => void;
 }

@@ -1,13 +1,14 @@
 /**
- * Laboratório Genesis 3D — parâmetros planejados.
+ * Laboratório Genesis 3D — parâmetros.
  *
- * ESTADO: preparação. Nada abaixo além de `reference` e `camera` é usado ainda.
- * Os blocos marcados como "planejado" documentam o contrato que a futura cena
- * tridimensional (Three.js + glTF) deverá seguir; servem de ponto único para
- * refinamentos, como src/config/field.ts na Home.
+ * A câmera reproduz exatamente a usada no ajuste do modelo à fotografia
+ * (genesis3d/params/genesis.json): fov vertical 30° sobre a altura da foto,
+ * posição (0, 0, 4) olhando para a origem. No laboratório, a foto ocupa
+ * `reference.heightRatio` da altura da tela; o fov é recalculado para que o
+ * modelo ocupe exatamente a mesma área.
  */
 export const LAB_GENESIS = {
-  /** Referência visual atual: a fotografia oficial, centralizada. */
+  /** Referência visual: a fotografia oficial, centralizada. */
   reference: {
     src: "/flowers/genesis.webp",
     width: 1672,
@@ -16,58 +17,53 @@ export const LAB_GENESIS = {
     heightRatio: 0.88,
   },
 
-  /** Câmera fixa (sem órbita, sem zoom, sem parallax). */
+  /** Câmera fixa (sem órbita, sem zoom, sem parallax) — igual à do ajuste. */
   camera: {
-    fov: 35,
+    /** fov vertical (graus) que cobre exatamente a altura da fotografia. */
+    photoFov: 30,
     position: [0, 0, 4] as const,
     target: [0, 0, 0] as const,
-    near: 0.1,
-    far: 50,
+    near: 0.05,
+    far: 40,
   },
 
-  /** Planejado: renderizador. */
   renderer: {
     maxPixelRatio: 2,
     antialias: true,
-    toneMapping: "ACESFilmic" as const,
-    exposure: 1,
-    background: "#000000",
+    exposure: 1.05,
+    background: 0x000000,
   },
 
-  /** Planejado: modelo fotorrealista da flor (glTF binário, Draco/Meshopt). */
+  /** Modelo exportado pelo Blender (genesis3d/scripts/build_blender.py). */
   model: {
     src: "/lab/genesis/genesis.glb",
-    /** Nós esperados no arquivo, para segmentação e deformação por parte. */
-    nodes: { petals: "petal_", stem: "stem", stamens: "stamen_" },
+    nodes: { petals: "petal_", stem: "stem", stamens: "stamen_", anthers: "anther_" },
   },
 
-  /** Planejado: iluminação de estúdio monocromática (fundo preto absoluto). */
+  /** Iluminação provisória monocromática (luz principal do alto à esquerda, como na foto). */
   lighting: {
-    key: { intensity: 2.2, position: [2.5, 3, 4] as const },
-    rim: { intensity: 1.4, position: [-3, 2, -2] as const },
-    ambient: { intensity: 0.05 },
+    key: { intensity: 3.2, position: [-2.5, 3.2, 3.5] as const },
+    fill: { intensity: 0.45, position: [3, -1, 2.5] as const },
+    rim: { intensity: 1.6, position: [2, 2.5, -3] as const },
+    ambient: { intensity: 0.08 },
   },
 
-  /** Planejado: materiais das pétalas (translucidez leve, sem cor). */
+  /** Material neutro para avaliar a geometria (sem texturas). */
   materials: {
-    petal: { roughness: 0.55, sheen: 0.35, transmission: 0.08, thickness: 0.02 },
-    stem: { roughness: 0.7 },
+    neutral: { color: 0xbdbdbd, roughness: 0.62, metalness: 0 },
+    anther: { color: 0x2a2a2a, roughness: 0.75, metalness: 0 },
+    wireframe: { color: 0xd9d9d9, opacity: 0.55 },
   },
 
-  /** Planejado: interação por raycasting com o cursor/toque. */
-  interaction: {
-    /** Raio de influência do contato (unidades de mundo). */
-    radius: 0.18,
-  },
-
-  /** Planejado: deformação localizada de vértices + simulação elástica. */
-  elasticity: {
-    /** Deslocamento máximo de um vértice (unidades de mundo). */
-    maxDisplacement: 0.04,
-    /** Mola de retorno e amortecimento (por segundo). */
-    stiffness: 38,
-    damping: 7,
-    /** Propagação ao longo da pétala (0 = local, 1 = pétala inteira). */
-    falloff: 0.65,
-  },
+  /** Planejado (próximas etapas): raycasting e simulação elástica. */
+  interaction: { radius: 0.18 },
+  elasticity: { maxDisplacement: 0.04, stiffness: 38, damping: 7, falloff: 0.65 },
 } as const;
+
+/** Modos de diagnóstico (somente via ?view=). O padrão é o modelo, sem controles. */
+export type LabView = "model" | "reference" | "wireframe" | "compare" | "inspect";
+
+export function parseView(search: string): LabView {
+  const v = new URLSearchParams(search).get("view");
+  return v === "reference" || v === "wireframe" || v === "compare" || v === "inspect" ? v : "model";
+}

@@ -1,0 +1,197 @@
+{
+  "units": "metros (escala arbitrária; tépala ≈ 1,3)",
+  "up": "+Y (glTF)",
+  "meshes": [
+    {
+      "name": "petal_A_outer",
+      "kind": "tepal",
+      "whorl": "outer",
+      "grid": [
+        72,
+        33
+      ],
+      "thickness": 0.0045,
+      "vertices": 4752,
+      "triangles": 9500
+    },
+    {
+      "name": "petal_B_inner",
+      "kind": "tepal",
+      "whorl": "inner",
+      "grid": [
+        72,
+        33
+      ],
+      "thickness": 0.0045,
+      "vertices": 4752,
+      "triangles": 9500
+    },
+    {
+      "name": "petal_C_outer",
+      "kind": "tepal",
+      "whorl": "outer",
+      "grid": [
+        72,
+        33
+      ],
+      "thickness": 0.0045,
+      "vertices": 4752,
+      "triangles": 9500
+    },
+    {
+      "name": "petal_F_inner",
+      "kind": "tepal",
+      "whorl": "inner",
+      "grid": [
+        72,
+        33
+      ],
+      "thickness": 0.0045,
+      "vertices": 4752,
+      "triangles": 9500
+    },
+    {
+      "name": "petal_D_outer",
+      "kind": "tepal",
+      "whorl": "outer",
+      "grid": [
+        72,
+        33
+      ],
+      "thickness": 0.0045,
+      "vertices": 4752,
+      "triangles": 9500
+    },
+    {
+      "name": "petal_E_inner",
+      "kind": "tepal",
+      "whorl": "inner",
+      "grid": [
+        72,
+        33
+      ],
+      "thickness": 0.0045,
+      "vertices": 4752,
+      "triangles": 9500
+    },
+    {
+      "name": "receptacle",
+      "kind": "receptacle",
+      "vertices": 360,
+      "triangles": 680
+    },
+    {
+      "name": "stem",
+      "kind": "stem",
+      "vertices": 720,
+      "triangles": 1404
+    },
+    {
+      "name": "stamen_1",
+      "kind": "filament",
+      "vertices": 280,
+      "triangles": 540
+    },
+    {
+      "name": "anther_1",
+      "kind": "anther",
+      "vertices": 224,
+      "triangles": 420
+    },
+    {
+      "name": "stamen_2",
+      "kind": "filament",
+      "vertices": 280,
+      "triangles": 540
+    },
+    {
+      "name": "anther_2",
+      "kind": "anther",
+      "vertices": 224,
+      "triangles": 420
+    },
+    {
+      "name": "stamen_3",
+      "kind": "filament",
+      "vertices": 280,
+      "triangles": 540
+    },
+    {
+      "name": "anther_3",
+      "kind": "anther",
+      "vertices": 224,
+      "triangles": 420
+    },
+    {
+      "name": "stamen_4",
+      "kind": "filament",
+      "vertices": 280,
+      "triangles": 540
+    },
+    {
+      "name": "anther_4",
+      "kind": "anther",
+      "vertices": 224,
+      "triangles": 420
+    },
+    {
+      "name": "stamen_5",
+      "kind": "filament",
+      "vertices": 280,
+      "triangles": 540
+    },
+    {
+      "name": "anther_5",
+      "kind": "anther",
+      "vertices": 224,
+      "triangles": 420
+    },
+    {
+      "name": "stamen_6",
+      "kind": "filament",
+      "vertices": 280,
+      "triangles": 540
+    },
+    {
+      "name": "anther_6",
+      "kind": "anther",
+      "vertices": 224,
+      "triangles": 420
+    },
+    {
+      "name": "style",
+      "kind": "style",
+      "vertices": 280,
+      "triangles": 540
+    },
+    {
+      "name": "stigma_1",
+      "kind": "stigma_lobe",
+      "vertices": 80,
+      "triangles": 144
+    },
+    {
+      "name": "stigma_2",
+      "kind": "stigma_lobe",
+      "vertices": 80,
+      "triangles": 144
+    },
+    {
+      "name": "stigma_3",
+      "kind": "stigma_lobe",
+      "vertices": 80,
+      "triangles": 144
+    }
+  ],
+  "totals": {
+    "meshes": 24,
+    "vertices": 33136,
+    "triangles": 65816
+  },
+  "attributes": {
+    "_anchor": "1 na base da tépala (fixa), 0 a partir de ~14% do comprimento",
+    "_flex": "0 rígido na base → 1 na ponta (flexibilidade para deformação)",
+    "_edge": "0 na nervura central → 1 nas bordas",
+    "TEXCOORD_0": "u = posição ao longo da largura (0–1), v = base → ponta (0–1)"
+  }
+}
