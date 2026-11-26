@@ -116,17 +116,19 @@
 /* ── Tipografia ────────────────────────────────────────────────────────── */
 .number {
   display: flex;
-  gap: 0.15em;
+  gap: 0.6em;
   margin-bottom: clamp(1.25rem, 3vh, 2rem);
   font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 400;
-  letter-spacing: 0.2em;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--color-gray-500);
+  color: var(--color-gray-200);
 }
 
 .label {
+  font-weight: 400;
   color: var(--color-gray-500);
 }
 
@@ -195,10 +197,19 @@
   color: var(--color-gray-500);
 }
 
-.signatureSlot {
-  width: clamp(6.5rem, 12vw, 9rem);
-  aspect-ratio: 2 / 1;
-  border-bottom: 1px solid var(--color-gray-900);
+/* Assinatura HTZ: 110 px no celular, 140 px no desktop (proporção do original). */
+.signatureMark {
+  display: block;
+  width: 110px;
+  height: auto;
+  color: var(--color-white);
+  overflow: visible;
+}
+
+@media (min-width: 900px) {
+  .signatureMark {
+    width: 140px;
+  }
 }
 
 /* ── Encerramento ──────────────────────────────────────────────────────── */

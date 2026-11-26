@@ -53,7 +53,7 @@ export const ABOUT_CHAPTERS: readonly AboutChapter[] = [
 export const ABOUT_COPY = {
   scrollHint: "Scroll to discover",
   signatureLabel: "Created by",
-  /** Texto alternativo da assinatura HTZ (etapa B). */
-  signatureAlt: "HTZ signature",
+  /** Nome acessível da assinatura (lido após "Created by"). */
+  signatureAlt: "HTZ",
   explore: "Explore the universe",
 } as const;

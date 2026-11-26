@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ABOUT_CHAPTERS, ABOUT_COPY } from "@/config/about";
 import { routes } from "@/config/site";
+import { HtzSignature } from "./HtzSignature";
 import styles from "./About.module.css";
 
 /**
@@ -31,7 +32,7 @@ export function AboutPage() {
               <div className={styles.copy}>
                 <p className={styles.number}>
                   <span>{chapter.number}</span>
-                  <span aria-hidden="true"> / </span>
+                  <span aria-hidden="true">/</span>
                   <span className={styles.label}>{chapter.label}</span>
                 </p>
                 <Heading id={headingId} className={styles.title}>
@@ -52,8 +53,7 @@ export function AboutPage() {
                 {chapter.id === "metamorphosis" && (
                   <div className={styles.signature}>
                     <p className={styles.signatureLabel}>{ABOUT_COPY.signatureLabel}</p>
-                    {/* Assinatura HTZ: reservada para a etapa B (vetorização + animação). */}
-                    <div className={styles.signatureSlot} data-signature-slot aria-hidden="true" />
+                    <HtzSignature className={styles.signatureMark} label={ABOUT_COPY.signatureAlt} />
                   </div>
                 )}
 
