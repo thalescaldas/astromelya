@@ -7,7 +7,7 @@ import { GenesisLab } from "@/lab/genesis/GenesisLab";
  * o florescimento da Home.
  */
 export const metadata: Metadata = {
-  title: "Genesis — laboratório",
+  title: "Genesis — lab",
   robots: {
     index: false,
     follow: false,
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function GenesisLabPage() {
   return (
-    <main aria-label="Laboratório Genesis">
+    <main aria-label="Genesis lab">
       <GenesisLab />
     </main>
   );

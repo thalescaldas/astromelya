@@ -3,10 +3,18 @@ import Link from "next/link";
 import { routes, site } from "@/config/site";
 import styles from "./SiteHeader.module.css";
 
+type Route = (typeof routes)[keyof typeof routes];
+
 interface SiteHeaderProps {
   /** Rota atual, para marcar o item ativo com `aria-current`. */
-  current?: (typeof routes)[keyof typeof routes];
+  current?: Route;
 }
+
+const NAV: { href: Route; label: string }[] = [
+  { href: routes.projects, label: "Projects" },
+  { href: routes.about, label: "About" },
+  { href: routes.contact, label: "Contact" },
+];
 
 export function SiteHeader({ current }: SiteHeaderProps) {
   return (
@@ -14,7 +22,7 @@ export function SiteHeader({ current }: SiteHeaderProps) {
       <Link
         href={routes.home}
         className={styles.brand}
-        aria-label={`${site.name} — início`}
+        aria-label={`${site.name} — home`}
         aria-current={current === routes.home ? "page" : undefined}
       >
         <Image
@@ -28,14 +36,20 @@ export function SiteHeader({ current }: SiteHeaderProps) {
         />
       </Link>
 
-      <nav aria-label="Principal">
-        <Link
-          href={routes.projects}
-          className={styles.navLink}
-          aria-current={current === routes.projects ? "page" : undefined}
-        >
-          Projetos
-        </Link>
+      <nav aria-label="Primary">
+        <ul className={styles.nav}>
+          {NAV.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className={styles.navLink}
+                aria-current={current === item.href ? "page" : undefined}
+              >
+                {item.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
       </nav>
     </header>
   );

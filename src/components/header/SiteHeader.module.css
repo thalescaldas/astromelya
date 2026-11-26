@@ -5,6 +5,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
   padding:
     max(var(--edge), env(safe-area-inset-top))
     max(var(--edge), env(safe-area-inset-right))
@@ -36,10 +37,17 @@
   height: auto;
 }
 
+.nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.875rem, 2.4vw, 2.25rem);
+  list-style: none;
+}
+
 .navLink {
   display: inline-block;
   /* Área de toque confortável sem alterar a leitura visual */
-  padding: 0.75rem 0 0.75rem 0.75rem;
+  padding: 0.75rem 0;
   margin: -0.75rem 0;
   font-family: var(--font-mono);
   font-size: 0.75rem;
@@ -47,10 +55,27 @@
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--color-fg);
+  white-space: nowrap;
   transition: color var(--duration-fast) var(--ease-out);
 }
 
 .navLink:hover,
 .navLink[aria-current="page"] {
   color: var(--color-fg-strong);
+}
+
+/* Telas estreitas: wordmark e navegação compactos, sem sobreposição. */
+@media (max-width: 480px) {
+  .wordmark {
+    width: clamp(6rem, 29vw, 8.5rem);
+  }
+
+  .nav {
+    gap: clamp(0.625rem, 3.2vw, 0.875rem);
+  }
+
+  .navLink {
+    font-size: 0.6875rem;
+    letter-spacing: clamp(0.06em, calc(1.4vw - 0.18em), 0.14em);
+  }
 }

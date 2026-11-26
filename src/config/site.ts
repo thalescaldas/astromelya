@@ -5,13 +5,15 @@
 export const site = {
   name: "Astromelya",
   url: "https://astromelya.com",
-  description: "Astromelya — universo criativo independente.",
-  locale: "pt_BR",
-  lang: "pt-BR",
+  description: "Astromelya — an independent creative universe.",
+  locale: "en_US",
+  lang: "en",
   themeColor: "#000000",
 } as const;
 
 export const routes = {
   home: "/",
-  projects: "/projetos",
+  projects: "/projects",
+  about: "/about",
+  contact: "/contact",
 } as const;

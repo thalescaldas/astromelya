@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { SiteHeader } from "@/components/header/SiteHeader";
+import { StubPage } from "@/components/page/StubPage";
 import { routes } from "@/config/site";
-import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "Projetos",
+  title: "Projects",
   alternates: { canonical: routes.projects },
 };
 
@@ -13,12 +12,5 @@ export const metadata: Metadata = {
  * src/projects quando houver projetos reais aprovados.
  */
 export default function ProjectsPage() {
-  return (
-    <>
-      <SiteHeader current={routes.projects} />
-      <main className={styles.page}>
-        <h1 className={styles.title}>Projetos</h1>
-      </main>
-    </>
-  );
+  return <StubPage title="Projects" route={routes.projects} />;
 }
