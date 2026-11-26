@@ -17,12 +17,56 @@ ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 from geometry import tepal_surface, tube, ellipsoid, stem_path, stamen_paths, flower_frame, unit, smoothstep
 
+
+def lathe(base, axis, profile_z, profile_r, nseg=28, ribs=0, rib_depth=0.0):
+    """Superfície de revolução ao longo do eixo (receptáculo/ovário com costelas)."""
+    axis = unit(axis)
+    ref = np.array([0.0, 1.0, 0.0]) if abs(axis[1]) < 0.9 else np.array([1.0, 0.0, 0.0])
+    ex = unit(np.cross(axis, ref)); ey = np.cross(axis, ex)
+    ang = np.linspace(0, 2 * np.pi, nseg, endpoint=False)
+    P = np.zeros((len(profile_z), nseg, 3))
+    for i, (z, r) in enumerate(zip(profile_z, profile_r)):
+        rr = r * (1 + rib_depth * np.cos(ribs * ang)) if ribs else np.full(nseg, r)
+        P[i] = base + axis * z + rr[:, None] * (np.cos(ang)[:, None] * ex + np.sin(ang)[:, None] * ey)
+    return P
+
+
+def organic_tube(path, radius_fn, nseg=20, ellipse=1.0, grooves=0, groove_depth=0.0):
+    """Tubo com raio variável, seção levemente elíptica e sulcos longitudinais."""
+    path = np.asarray(path)
+    n = len(path)
+    tan = np.gradient(path, axis=0); tan /= np.linalg.norm(tan, axis=1, keepdims=True)
+    ref = np.array([0.0, 0.0, 1.0]) if abs(tan[0][2]) < 0.9 else np.array([1.0, 0.0, 0.0])
+    nx = unit(np.cross(tan[0], ref))
+    ang = np.linspace(0, 2 * np.pi, nseg, endpoint=False)
+    P = np.zeros((n, nseg, 3))
+    for i in range(n):
+        nx = unit(nx - tan[i] * np.dot(nx, tan[i])); ny = np.cross(tan[i], nx)
+        t = i / (n - 1)
+        r = radius_fn(t) * (1 + groove_depth * np.cos(grooves * ang + t * 2.0)) if grooves else np.full(nseg, radius_fn(t))
+        rot = 0.6 * t  # orientação da elipse deriva suavemente
+        cx, cy = np.cos(ang + rot), np.sin(ang + rot)
+        P[i] = path[i] + r[:, None] * (cx[:, None] * nx * ellipse + cy[:, None] * ny / ellipse)
+    return P
+
+
+def anther_mesh(center, axis, length, radius, side, nu=18, nv=16):
+    """Antera bilobada (duas tecas): seção em forma de amendoim, pontas arredondadas."""
+    axis = unit(axis); ex = unit(side - axis * np.dot(side, axis)); ey = np.cross(axis, ex)
+    th = np.linspace(0, np.pi, nu); ph = np.linspace(0, 2 * np.pi, nv, endpoint=False)
+    P = np.zeros((nu, nv, 3))
+    for i, t in enumerate(th):
+        prof = math.sin(t) ** 0.85
+        r = radius * prof * (1 + 0.2 * np.cos(2 * ph))      # dois lobos
+        P[i] = center + axis * (math.cos(t) * length / 2) + r[:, None] * (np.cos(ph)[:, None] * ex + np.sin(ph)[:, None] * ey)
+    return P
+
 PARAMS = os.path.join(ROOT, "params", "genesis.json")
 BLEND = os.path.join(ROOT, "blender", "genesis.blend")
 GLB = os.path.join(ROOT, "..", "public", "lab", "genesis", "genesis.glb")
 MANIFEST = os.path.join(ROOT, "model-manifest.json")
 
-TEPAL_RES = (72, 33)        # (u: base → ponta, v: borda → borda) da superfície média
+TEPAL_RES = (76, 41)        # (u: base → ponta, v: borda → borda) da superfície média
 TEPAL_THICKNESS = 0.0045    # espessura delicada (unidades de mundo; tépala ~1,3)
 
 
@@ -119,25 +163,37 @@ def main():
     # ── receptáculo / ovário ──
     A, R0 = flower_frame(g)
     base = np.array(g["base"])
-    E = ellipsoid(base - A * 0.05, A, 0.16, 0.05, nu=18, nv=20)
+    # ovário/receptáculo: perfil contínuo do caule até o anel das tépalas, 6 costelas sutis
+    zs = np.linspace(-0.19, 0.025, 26)
+    s = (zs - zs[0]) / (zs[-1] - zs[0])
+    stem_r = g["stem"]["radius"] * 1.25
+    rs = stem_r + (0.058 - stem_r) * np.sin(np.pi * np.clip(s / 0.9, 0, 1)) ** 0.8 * (1 - 0.35 * smoothstep(0.6, 1.0, s))
+    rs = np.maximum(rs, 0.006)
+    E = lathe(base, A, zs, rs, nseg=30, ribs=6, rib_depth=0.045)
     add_mesh("receptacle", to_blender(E.reshape(-1, 3)), grid_faces(E.shape[0], E.shape[1], wrap=True), root, mat_stem)
     manifest["meshes"].append({"name": "receptacle", "kind": "receptacle"})
 
     # ── caule ──
     path = stem_path(g)
-    r = g["stem"]["radius"] * (1.0 + 0.25 * np.linspace(0, 1, len(path)))
-    T = tube(path, r, nseg=18)
+    r0 = g["stem"]["radius"]
+    # alarga ao encontrar o receptáculo, afina levemente para baixo, pequenas variações
+    stem_radius = lambda t: r0 * (1.25 - 0.25 * smoothstep(0.0, 0.25, t)) * (1 - 0.08 * t) * (1 + 0.035 * math.sin(t * 11.0) + 0.02 * math.sin(t * 29.0 + 1.3))
+    T = organic_tube(path, stem_radius, nseg=22, ellipse=1.1, grooves=3, groove_depth=0.03)
     add_mesh("stem", to_blender(T.reshape(-1, 3)), grid_faces(T.shape[0], T.shape[1], wrap=True), root, mat_stem)
     manifest["meshes"].append({"name": "stem", "kind": "stem"})
 
     # ── estames: filetes + anteras ──
     for k, sp in enumerate(stamen_paths(prm["stamens"], g), start=1):
-        rr = np.linspace(0.0075, 0.005, len(sp))
-        T = tube(sp, rr, nseg=10)
+        tt = np.linspace(0, 1, len(sp))
+        # filete afinando até a ponta, com leve ondulação perpendicular
+        wiggle = np.cross(unit(sp[-1] - sp[0]), A)
+        sp = sp + np.outer(0.006 * np.sin(np.pi * tt * 2.0 + k) * np.sin(np.pi * tt), wiggle)
+        T = organic_tube(sp, lambda t: 0.0078 - 0.0034 * t, nseg=10)
         add_mesh(f"stamen_{k}", to_blender(T.reshape(-1, 3)), grid_faces(T.shape[0], T.shape[1], wrap=True), root, mat_stamen)
         tip_dir = unit(sp[-1] - sp[-4])
         side = unit(np.cross(tip_dir, A))
-        an = ellipsoid(sp[-1] + tip_dir * 0.01, unit(tip_dir * 0.35 + side), 0.11, 0.019, nu=16, nv=14)
+        # antera dorsifixa: inclinada em relação ao filete, bilobada
+        an = anther_mesh(sp[-1] + tip_dir * 0.012, unit(tip_dir * 0.45 + side), 0.11, 0.0185, side=A)
         add_mesh(f"anther_{k}", to_blender(an.reshape(-1, 3)), grid_faces(an.shape[0], an.shape[1], wrap=True), root, mat_anther)
         manifest["meshes"].append({"name": f"stamen_{k}", "kind": "filament"})
         manifest["meshes"].append({"name": f"anther_{k}", "kind": "anther"})

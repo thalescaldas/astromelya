@@ -15,6 +15,8 @@ genesis3d/
 │   ├── geometry.py        superfícies paramétricas (tépalas, tubos, elipsoides) + câmera
 │   ├── fit.py             ajuste à fotografia (silhueta, pontos anatômicos, regiões por tépala)
 │   ├── overlay.py         sobreposição diagnóstica modelo × foto
+│   ├── rebuild_e.py       reconstrução individual da tépala E (varredura de orientação)
+│   ├── check.py           integridade: interseções entre tépalas, normais, atributos
 │   └── build_blender.py   constrói a cena no Blender, salva .blend e exporta GLB
 ├── params/
 │   ├── initial.json       leitura anatômica inicial da fotografia (alvos e parâmetros)
@@ -25,14 +27,29 @@ genesis3d/
 public/lab/genesis/genesis.glb   modelo exportado (usado só em /lab/genesis)
 ```
 
+## Controles de forma (fase 03.3.2.1)
+
+- **Campo Bézier por tépala** (`warp_n`, `warp_b`: 4 × 3 pontos de controle): desloca a
+  superfície ao longo da normal e da largura (relativa à largura local), nulo na base.
+  Regularizado (magnitude e variação entre vizinhos) para evitar amassados.
+- `roll_neg` / `roll_pos`: enrolamento de uma margem (capuz da tépala E); `tip_roll`:
+  enrolamento da extremidade (A); `side_wave`: ondulação lateral da linha central (C);
+  `rib_width`: nervura central larga e suave (B); `veins2`: venação secundária;
+  `tip_floor`: ponta levemente romba (sem agulhas).
+- **Ajuste com oclusão**: `fit.py` renderiza um mapa de rótulos com profundidade e exige que
+  cada região da foto mostre a própria tépala (não basta cobrir: não pode ser escondida).
+
 ## Regenerar
 
 Requer Python 3.13 com `bpy`, `numpy` e `opencv-python-headless` (fora do projeto web):
 
 ```bash
 cd genesis3d/scripts
-python fit.py ../../public/flowers/genesis-mask.png ../params/genesis.json ../params/genesis.json 3000
+python rebuild_e.py ../params/genesis.json ../params/genesis.json           # se E precisar ser refeita
+python fit.py ../../public/flowers/genesis-mask.png ../params/genesis.json ../params/genesis.json 12000
+FIT_SCALE=0.75 FIT_IOU_WEIGHT=3 python fit.py ../../public/flowers/genesis-mask.png ../params/genesis.json ../params/genesis.json 4000
 python build_blender.py
+python check.py ../params/genesis.json ../../public/lab/genesis/genesis.glb
 ```
 
 ## Anatomia modelada (leitura da fotografia)
@@ -51,7 +68,7 @@ python build_blender.py
 
 ## Preparação para deformação
 
-- Cada tépala é uma malha independente: grade regular 72 × 33 (superfície média) com
+- Cada tépala é uma malha independente: grade regular 76 × 41 (superfície média) com
   espessura de 0,0045 (Solidify), UV contínuo (u = largura, v = base → ponta).
 - Atributos por vértice (glTF): `_ANCHOR` (1 = base fixa), `_FLEX` (0 rígido → 1 ponta),
   `_EDGE` (0 nervura → 1 borda), além de `NORMAL` e `TEXCOORD_0`.

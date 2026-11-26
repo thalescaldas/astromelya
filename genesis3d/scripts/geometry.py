@@ -69,8 +69,28 @@ def width_profile(u, p):
     up = p["widest"]
     q = math.log(0.5) / math.log(up)
     body = np.sin(np.pi * np.clip(u, 0, 1) ** q) ** p.get("tip_round", 0.75)
+    # ponta levemente romba (sem convergir a um único ponto: evita agulhas e pinçamento)
+    body = np.maximum(body, p.get("tip_floor", 0.07) * smoothstep(0.55, 1.0, u))
     claw = p.get("claw", 0.1)
     return claw * (1 - smoothstep(0.0, 0.35, u)) + (1 - claw * (1 - smoothstep(0.0, 0.35, u))) * body
+
+
+WARP_SHAPE = (4, 3)  # pontos de controle Bézier (ao longo × através) por tépala
+
+
+def bernstein(n, t):
+    t = np.asarray(t, dtype=np.float64)
+    return np.stack([math.comb(n, i) * t ** i * (1 - t) ** (n - i) for i in range(n + 1)], axis=-1)
+
+
+def warp_field(U, V, ctrl):
+    """Campo de deslocamento tensorial Bézier sobre (u, v) — superfície de pontos de controle.
+    ctrl: matriz (4, 3). Nulo na base (âncora) por construção: multiplicado por smoothstep."""
+    ctrl = np.asarray(ctrl, dtype=np.float64).reshape(WARP_SHAPE)
+    Bu = bernstein(WARP_SHAPE[0] - 1, U)          # (nu, nv, 4)
+    Bv = bernstein(WARP_SHAPE[1] - 1, (V + 1) / 2)  # (nu, nv, 3)
+    field = np.einsum("...i,...j,ij->...", Bu, Bv, ctrl)
+    return field * smoothstep(0.0, 0.3, U)
 
 
 def tepal_surface(p, g, nu=56, nv=23, seed=0):
@@ -94,14 +114,16 @@ def tepal_surface(p, g, nu=56, nv=23, seed=0):
     tang = np.cos(th)[:, None] * A + np.sin(th)[:, None] * R
     nrm = -np.sin(th)[:, None] * A + np.cos(th)[:, None] * R  # normal externa (no plano)
 
-    # torção ao longo do comprimento
-    tw = math.radians(p.get("twist", 0.0)) * u
+    # torção ao longo do comprimento + enrolamento localizado da extremidade
+    tw = math.radians(p.get("twist", 0.0)) * u + math.radians(p.get("tip_roll", 0.0)) * smoothstep(0.7, 1.0, u)
     Bv = np.cos(tw)[:, None] * T0 + np.sin(tw)[:, None] * nrm
     Nv = np.cos(tw)[:, None] * nrm - np.sin(tw)[:, None] * T0
 
-    # linha central integrada
+    # linha central integrada (+ ondulação lateral suave ao longo do comprimento)
     du = np.diff(u, prepend=0.0)
     center = base + R * g.get("ring", 0.035) + np.cumsum(tang * (du * L)[:, None], axis=0)
+    side_wave = p.get("side_wave", 0.0) * L * np.sin(np.pi * u * p.get("side_wave_freq", 1.5)) * smoothstep(0.15, 0.6, u)
+    center = center + side_wave[:, None] * Bv
 
     # largura com assimetria e borda irregular (ruído suave por lado)
     w = width_profile(u, p) * p["width"]
@@ -117,7 +139,8 @@ def tepal_surface(p, g, nu=56, nv=23, seed=0):
 
     # concha (bordas curvadas para dentro) + nervura central suave + ondulações nas bordas
     cup = p.get("cup", 0.3) * w[:, None] * V ** 2
-    rib = p.get("rib", 0.012) * np.exp(-((V / 0.12) ** 2)) * smoothstep(0.05, 0.4, U)
+    # nervura central suave (perfil largo: sem dobra rígida)
+    rib = p.get("rib", 0.012) * np.exp(-((V / p.get("rib_width", 0.22)) ** 2)) * smoothstep(0.05, 0.4, U)
     ruff = (
         p.get("ruffle", 0.02)
         * np.abs(V) ** 3
@@ -136,7 +159,21 @@ def tepal_surface(p, g, nu=56, nv=23, seed=0):
     crinkle = p.get("crinkle", 0.004) * (
         np.sin(U * 23.0 + V * 5.0 + seed) * np.sin(V * 9.0 - U * 7.0 + 2 * seed)
     ) * smoothstep(0.2, 0.8, U)
-    offset_n = -cup + rib + ruff + veins + crinkle
+    # venação secundária, mais fina e rasa
+    veins2 = (
+        p.get("veins2", 0.0025) * w[:, None] * np.cos(V * np.pi * p.get("vein_count2", 13) + 0.7)
+        * smoothstep(0.15, 0.5, U) * (1 - 0.6 * smoothstep(0.75, 1.0, U))
+    )
+    # enrolamento de uma margem (ex.: capuz da tépala E); cada lado independente
+    roll = w[:, None] * (
+        p.get("roll_pos", 0.0) * smoothstep(0.15, 1.0, V) ** 2
+        + p.get("roll_neg", 0.0) * smoothstep(0.15, 1.0, -V) ** 2
+    ) * smoothstep(0.28, 0.6, U)  # começa no meio da tépala: sem dobras amassadas junto à base
+    warp_n = warp_field(U, V, p["warp_n"]) if "warp_n" in p else 0.0
+    warp_b = warp_field(U, V, p["warp_b"]) if "warp_b" in p else 0.0
+    offset_n = -cup + rib + ruff + veins + veins2 + crinkle + roll + warp_n
+    # deformação na largura é relativa à meia-largura local: nunca inverte a ponta estreita
+    half = half * (1 + np.clip(warp_b, -0.6, 0.6))
 
     P = center[:, None, :] + half[..., None] * Bv[:, None, :] + offset_n[..., None] * Nv[:, None, :]
     return P, U, V

@@ -7,84 +7,84 @@
       "kind": "tepal",
       "whorl": "outer",
       "grid": [
-        72,
-        33
+        76,
+        41
       ],
       "thickness": 0.0045,
-      "vertices": 4752,
-      "triangles": 9500
+      "vertices": 6232,
+      "triangles": 12460
     },
     {
       "name": "petal_B_inner",
       "kind": "tepal",
       "whorl": "inner",
       "grid": [
-        72,
-        33
+        76,
+        41
       ],
       "thickness": 0.0045,
-      "vertices": 4752,
-      "triangles": 9500
+      "vertices": 6232,
+      "triangles": 12460
     },
     {
       "name": "petal_C_outer",
       "kind": "tepal",
       "whorl": "outer",
       "grid": [
-        72,
-        33
+        76,
+        41
       ],
       "thickness": 0.0045,
-      "vertices": 4752,
-      "triangles": 9500
+      "vertices": 6232,
+      "triangles": 12460
     },
     {
       "name": "petal_F_inner",
       "kind": "tepal",
       "whorl": "inner",
       "grid": [
-        72,
-        33
+        76,
+        41
       ],
       "thickness": 0.0045,
-      "vertices": 4752,
-      "triangles": 9500
+      "vertices": 6232,
+      "triangles": 12460
     },
     {
       "name": "petal_D_outer",
       "kind": "tepal",
       "whorl": "outer",
       "grid": [
-        72,
-        33
+        76,
+        41
       ],
       "thickness": 0.0045,
-      "vertices": 4752,
-      "triangles": 9500
+      "vertices": 6232,
+      "triangles": 12460
     },
     {
       "name": "petal_E_inner",
       "kind": "tepal",
       "whorl": "inner",
       "grid": [
-        72,
-        33
+        76,
+        41
       ],
       "thickness": 0.0045,
-      "vertices": 4752,
-      "triangles": 9500
+      "vertices": 6232,
+      "triangles": 12460
     },
     {
       "name": "receptacle",
       "kind": "receptacle",
-      "vertices": 360,
-      "triangles": 680
+      "vertices": 780,
+      "triangles": 1500
     },
     {
       "name": "stem",
       "kind": "stem",
-      "vertices": 720,
-      "triangles": 1404
+      "vertices": 880,
+      "triangles": 1716
     },
     {
       "name": "stamen_1",
@@ -95,8 +95,8 @@
     {
       "name": "anther_1",
       "kind": "anther",
-      "vertices": 224,
-      "triangles": 420
+      "vertices": 288,
+      "triangles": 544
     },
     {
       "name": "stamen_2",
@@ -107,8 +107,8 @@
     {
       "name": "anther_2",
       "kind": "anther",
-      "vertices": 224,
-      "triangles": 420
+      "vertices": 288,
+      "triangles": 544
     },
     {
       "name": "stamen_3",
@@ -119,8 +119,8 @@
     {
       "name": "anther_3",
       "kind": "anther",
-      "vertices": 224,
-      "triangles": 420
+      "vertices": 288,
+      "triangles": 544
     },
     {
       "name": "stamen_4",
@@ -131,8 +131,8 @@
     {
       "name": "anther_4",
       "kind": "anther",
-      "vertices": 224,
-      "triangles": 420
+      "vertices": 288,
+      "triangles": 544
     },
     {
       "name": "stamen_5",
@@ -143,8 +143,8 @@
     {
       "name": "anther_5",
       "kind": "anther",
-      "vertices": 224,
-      "triangles": 420
+      "vertices": 288,
+      "triangles": 544
     },
     {
       "name": "stamen_6",
@@ -155,8 +155,8 @@
     {
       "name": "anther_6",
       "kind": "anther",
-      "vertices": 224,
-      "triangles": 420
+      "vertices": 288,
+      "triangles": 544
     },
     {
       "name": "style",
@@ -185,8 +185,8 @@
   ],
   "totals": {
     "meshes": 24,
-    "vertices": 33136,
-    "triangles": 65816
+    "vertices": 42980,
+    "triangles": 85452
   },
   "attributes": {
     "_anchor": "1 na base da tépala (fixa), 0 a partir de ~14% do comprimento",
