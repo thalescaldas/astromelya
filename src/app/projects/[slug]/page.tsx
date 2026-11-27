@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { StubPage } from "@/components/page/StubPage";
 import { routes } from "@/config/site";
-import { projects } from "@/projects";
+import { getPublishedProjects } from "@/projects";
+
+const projects = getPublishedProjects();
 
 /**
  * Páginas individuais de projetos (/projects/[slug]).
