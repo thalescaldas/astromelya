@@ -33,7 +33,7 @@ export function UnboundLab() {
       if (cancelled) return;
       scene = createUnboundScene({
         container,
-        params: params.view === "compare" ? { ...params, view: "beauty" } : params,
+        params: params.view === "compare" ? { ...params, view: "clay" } : params,
         onReady: (info) => {
           container.dataset.ready = "true";
           container.dataset.vertices = String(info.vertices);

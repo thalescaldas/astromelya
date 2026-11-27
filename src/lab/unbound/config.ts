@@ -44,11 +44,12 @@ export interface UnboundParams {
 export function parseParams(search: string): UnboundParams {
   const q = new URLSearchParams(search);
   const v = q.get("view");
-  const view: UnboundView = v === "clay" || v === "wireframe" || v === "inspect" || v === "compare" ? v : "beauty";
+  // padrão: material cinza neutro (avaliação da geometria espacial)
+  const view: UnboundView = v === "beauty" || v === "wireframe" || v === "inspect" || v === "compare" ? v : "clay";
   const variant = q.get("variant");
   return {
     view,
-    look: q.get("look") === "clay" ? "clay" : "beauty",
+    look: q.get("look") === "beauty" ? "beauty" : "clay",
     variant: variant === "A" || variant === "B" || variant === "C" ? variant : null,
   };
 }

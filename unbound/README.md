@@ -1,3 +1,23 @@
+# The Unbound Hybrid — Beyond Form (etapa C.1.1: anatomia espacial)
+
+Geometria atual: `scripts/build_spatial.py` — curva espinhal fechada e assimétrica em 3D em torno
+do vazio central + duas curvas de borda em profundidades distintas (torção alterna entre o plano do
+anel e a profundidade); membranas entre as três curvas-guia relaxadas (Laplaciano, curvas fixas) →
+superfícies tensionadas próximas de mínimas; extremidades em crescente nas bordas externas.
+Malha única 480 × 41 (periódica), 19 680 vértices / 38 400 triângulos; bordas abertas
+intencionais = as duas curvas de borda; 0 arestas não manifold; 0 auto-interseções.
+Atributos: `_REGION`, `_ANCHOR`, `_FLEX`, `_STIFFNESS`, `_GUIDE` (1 nas curvas-guia); UV (u ao redor, v através).
+
+```bash
+python unbound/scripts/build_spatial.py public/lab/unbound/beyond-form.glb unbound/blender/the-unbound-beyond-form.blend
+```
+
+Laboratório: `/lab/unbound` abre em cinza neutro (clay). Versões anteriores: branches
+`backup/unbound-tensioned-web-v1`, `backup/unbound-hybrid-gyroid-v1`, `backup/unbound-membranes-v1`
+e `archive/`. Documentação da versão anterior (lâminas recortadas) abaixo, para referência.
+
+---
+
 # The Unbound Hybrid — Beyond Form (etapa C.1)
 
 Escultura do About. Direção (Master Blueprint 02.1): **Singularity + Unknown Anatomy** —
