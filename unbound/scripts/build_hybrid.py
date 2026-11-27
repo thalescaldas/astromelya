@@ -75,16 +75,21 @@ co = np.zeros(len(mesh.vertices) * 3); mesh.vertices.foreach_get("co", co)
 P = from_b(co.reshape(-1, 3))
 Vn = H.variant(name)
 _, parts = H.field(P[:, 0], P[:, 1], P[:, 2], Vn, parts=True)
-center = np.array([-0.05, 0.05, 0.0])
+center = np.array([0.0, 0.0, 0.0])    # núcleo: anel em torno do vazio central
 dist = np.linalg.norm(P - center, axis=1)
-is_spike = parts["horns"] < -0.01                                     # dentro dos chifres: extremidades
+is_spike = ((parts["horns"] < 0.004) | (parts["spike"] > 5)) & (dist > 1.0)   # extremidades afastadas do núcleo
 # bordas: onde o envelope ou o vazio principal recortam a folha (arestas tensionadas)
 rim = 1 - smoothstep(0.0, 0.05, np.minimum(np.abs(parts["env"]), np.abs(parts["cut"])))
 region = np.where(is_spike, 2, np.where(rim > 0.5, 1, 0)).astype(np.float32)
-anchor = (1 - smoothstep(0.18, 0.5, dist)).astype(np.float32)
+anchor = (1 - smoothstep(0.42, 0.75, dist)).astype(np.float32)   # anel/funil em torno do vazio
 flex = np.clip(smoothstep(0.2, 1.3, dist) + 0.35 * is_spike, 0, 1).astype(np.float32)
 stiff = np.clip((1 - flex) * 0.75 + 0.25 * rim + 0.05, 0, 1).astype(np.float32)
-for k, v in (("_REGION", region), ("_ANCHOR", anchor), ("_FLEX", flex), ("_STIFFNESS", stiff)):
+# _GLOW: proximidade da borda da membrana (cristas luminosas, seda tensionada)
+glow = np.exp(-parts["env"] / 0.035).astype(np.float32)
+extra = [("_GLOW", glow)]
+if "layer" in parts:
+    extra.append(("_LAYER", parts["layer"]))
+for k, v in [("_REGION", region), ("_ANCHOR", anchor), ("_FLEX", flex), ("_STIFFNESS", stiff)] + extra:
     a = mesh.attributes.new(name=k, type="FLOAT", domain="POINT"); a.data.foreach_set("value", v)
 
 # ── integridade: arestas não manifold, auto-interseções, normais ──

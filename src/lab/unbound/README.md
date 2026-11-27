@@ -9,7 +9,7 @@ Rota isolada `/lab/unbound` (não indexada, sem links públicos). Sem controles 
 | `?view=wireframe` | topologia |
 | `?view=inspect` | rotação/zoom livres (`&look=clay` para neutro) |
 | `?view=compare` | conceito oficial (esquerda) × modelo (direita) |
-| `&variant=A\|B\|C` | variações volumétricas estudadas |
+| `&variant=A\|B\|C` | variações estudadas: A Vortex Lattice, B Turbine Sails, C Tensioned Web (escolhida) |
 
 Modelo: `public/lab/unbound/beyond-form.glb`, gerado por `unbound/scripts/build_hybrid.py`.
-Protótipo anterior (8 membranas): `unbound/archive/membranes-v1/` e branch `backup/unbound-membranes-v1`.
+Protótipos anteriores: 8 membranas (`unbound/archive/membranes-v1/`, branch `backup/unbound-membranes-v1`) e giroide em envelope (`unbound/archive/hybrid-gyroid-v1/`, branch `backup/unbound-hybrid-gyroid-v1`).

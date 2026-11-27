@@ -4,9 +4,9 @@
  */
 export const LAB_UNBOUND = {
   model: "/lab/unbound/beyond-form.glb",
-  /** Variações volumétricas estudadas (diagnóstico: &variant=A|B|C). */
+  /** Variações estudadas (diagnóstico: &variant=A|B|C): A Vortex Lattice, B Turbine Sails, C Tensioned Web (escolhida). */
   study: { A: "/lab/unbound/study/beyond-form-A.glb", B: "/lab/unbound/study/beyond-form-B.glb", C: "/lab/unbound/study/beyond-form-C.glb" },
-  reference: { src: "/lab/unbound/reference/beyond-form.png", width: 440, height: 595 },
+  reference: { src: "/lab/unbound/reference/beyond-form.png", width: 420, height: 560 },
   camera: { fov: 28, near: 0.05, far: 60, direction: [0.12, 0.06, 1] as const, margin: 1.08 },
   renderer: { maxPixelRatio: 2, background: 0x000000 },
   /** Membrana translúcida preliminar (shader aditivo: sem problemas de ordenação). */
@@ -17,6 +17,8 @@ export const LAB_UNBOUND = {
     fibers: 0.11, // microfibras direcionais
     fiberScale: [34, 89] as const, // densidade das fibras primárias e finas (inteiros: sem emenda)
     side: 0.06, // luz lateral suave (revela curvatura)
+    seam: 0.3, // brilho das costuras/bordas tensionadas (_GLOW)
+    backLayer: 0.55, // intensidade relativa da camada posterior (_LAYER)
     depthFade: 0.45, // atenuação das camadas posteriores
     tint: [0.86, 0.87, 0.9] as const, // prata levemente fria
     exposure: 1.0,

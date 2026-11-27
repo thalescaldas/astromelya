@@ -66,6 +66,7 @@ export function createUnboundScene({ container, params, onReady }: UnboundSceneO
   let height = 1;
   const center = new Vector3();
   const half = new Vector3(1, 1, 1);
+  let framed = false; // a câmera é enquadrada no modelo uma vez (inspect: depois o usuário controla)
   let controls: { dispose(): void; target: Vector3; addEventListener(t: string, f: () => void): void } | null = null;
 
   const render = () => {
@@ -79,9 +80,10 @@ export function createUnboundScene({ container, params, onReady }: UnboundSceneO
     const vfov = (C.fov * Math.PI) / 180;
     const hfov = 2 * Math.atan(Math.tan(vfov / 2) * camera.aspect);
     const dist = Math.max(half.x / Math.tan(hfov / 2), half.y / Math.tan(vfov / 2)) * C.margin + half.z;
-    if (!controls) {
+    if (!controls || !framed) {
       camera.position.copy(center).addScaledVector(new Vector3(...C.direction).normalize(), dist);
       camera.lookAt(center);
+      if (mesh) framed = true;
     }
     camera.updateProjectionMatrix();
   };

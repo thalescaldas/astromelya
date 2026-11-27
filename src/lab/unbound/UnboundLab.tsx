@@ -11,7 +11,7 @@ import styles from "./UnboundLab.module.css";
  *   ?view=wireframe  — topology
  *   ?view=inspect    — free rotation/zoom (&look=clay for neutral)
  *   ?view=compare    — official concept (left) × model (right)
- *   &variant=A|B|C   — volumetric study variants
+ *   &variant=A|B|C   — study variants (A vortex lattice, B turbine sails, C tensioned web — chosen)
  */
 export function UnboundLab() {
   const ref = useRef<HTMLDivElement>(null);

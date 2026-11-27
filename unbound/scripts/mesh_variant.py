@@ -8,7 +8,7 @@ import hybrid_field as H
 name, out = sys.argv[1], sys.argv[2]
 voxel = float(sys.argv[3]) if len(sys.argv) > 3 else 0.011
 V = H.variant(name)
-lo = np.array([-1.45, -1.55, -1.0]); hi = np.array([1.45, 1.75, 1.0])
+lo = np.array([-1.7, -1.75, -0.95]); hi = np.array([1.7, 1.75, 0.95])
 xs, ys, zs = (np.arange(lo[i], hi[i] + voxel, voxel) for i in range(3))
 t0 = time.time()
 F = np.empty((len(xs), len(ys), len(zs)), np.float32)

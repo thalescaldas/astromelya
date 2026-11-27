@@ -1,77 +1,73 @@
 # The Unbound Hybrid — Beyond Form (etapa C.1)
 
-Escultura do About. Direção: **Singularity + Unknown Anatomy + Ascension**.
-Estado desenvolvido: **03 — Beyond Form** (expansão máxima). Os outros quatro estados,
-a física, a respiração e a rolagem ainda **não** foram implementados.
+Escultura do About. Direção (Master Blueprint 02.1): **Singularity + Unknown Anatomy** —
+vazio gravitacional dominante + estruturas orgânicas interconectadas + alongamento ascendente.
+Estado desenvolvido: **03 — Beyond Form**. Outros estados, física, respiração e rolagem: não implementados.
 
-Protótipo anterior (8 membranas em torno de um núcleo — rejeitado por lembrar uma flor):
-`archive/membranes-v1/` e branch `backup/unbound-membranes-v1`.
+Referência principal: prancha "Five states — one entity", estado 03 (`public/lab/unbound/reference/beyond-form.png`).
 
-## Estratégia de modelagem: geometria implícita (campos de distância)
+Protótipos anteriores preservados:
+- 8 membranas em torno de núcleo (rejeitado — floral): `archive/membranes-v1/`, branch `backup/unbound-membranes-v1`.
+- Giroide em envelope (a9911f0): `archive/hybrid-gyroid-v1/`, branch `backup/unbound-hybrid-gyroid-v1`.
 
-| Etapa | Técnica |
+## Estratégia: superfícies tensionadas entre contornos (geometria implícita)
+
+Lido na referência: uma lâmina curva da qual grandes discos côncavos foram removidos — festões
+entre as pontas, um anel de cavidades em lente em torno do vazio central — deixando bandas finas
+e teias tensionadas; as cristas luminosas são as bordas e as dobras.
+
+| Elemento | Construção |
 |---|---|
-| Superfície principal | **folha de superfície mínima** (giroide, ~2 células) com o domínio deformado: alongamento vertical, torção, curvatura em S e ondulação de baixa frequência |
-| Envelope | lobos elipsoidais em S + chifres afilados (crescentes); a folha é recortada pelo envelope com *smooth max* → bordas arredondadas e tensionadas |
-| Vazio principal | elipsoide subtraído no centro (Singularity) |
-| Extremidades | a folha preenche os chifres e se estreita até a ponta; um filete fino ao longo de cada chifre garante a continuidade |
-| Espessura | variável: ~0,058 no núcleo → ~0,030 nas regiões externas |
-| Malha | marching cubes (voxel 0,012) → Blender: fusão, remoção de fragmentos, suavização Laplaciana com preservação de volume, redução a 60 000 triângulos, UV (Smart UV Project), atributos |
+| Lâmina | altura h(u, v): sela torcida + poço gravitacional em torno do vazio + ondulação 3φ; distância corrigida pelo gradiente (espessura constante em regiões íngremes) |
+| Recortes | união suave de discos em **coordenadas de vórtice** (ângulo torcido pelo raio) → festões côncavos, cavidades em lente e pontas em crescente curvas |
+| Singularity | vazio circular atravessando o centro; anel tórico une as duas camadas num poço contínuo |
+| Nervuras | raios retos nas coordenadas de vórtice (= espirais reais) do anel até cada ponta, contidos no contorno — continuidade estrutural e cristas |
+| Profundidade | duas camadas (frontal e posterior, girada, com outro padrão) que se sobrepõem |
+| Espessura | 0,05 junto ao vazio → 0,032 nas extremidades (frontal); 0,044 → 0,030 (posterior) |
+| Bordas | levemente levantadas (curl) para captar Fresnel |
 
-A superfície mínima produz naturalmente o que a referência pede: cavidades reais que
-atravessam a entidade, selas tensionadas, conexões entre regiões e um corpo contínuo.
+Malha: marching cubes (voxel 0,0085) → Blender: fusão, remoção de fragmentos soltos, suavização
+Laplaciana com preservação de volume, redução a 60 000 triângulos, UV, atributos.
 
 ### Variações estudadas (`public/lab/unbound/study/`, `?variant=A|B|C`)
 
-| | Superfície | Resultado |
+| | Técnica | Resultado |
 |---|---|---|
-| **A — Singularity** | giroide + vazio central | vazio dominante + cavidades secundárias, conexões contínuas → **escolhida** |
-| B — Lattice | Schwarz P | cavidades regulares e arredondadas demais; lembra estrutura industrial |
-| C — Ascension | giroide alongado e mais torcido | fragmenta-se em "cortinas"; perde o vazio dominante |
-
-Também foi testada (e descartada) uma casca perfurada de envelope convexo: lia-se como
-uma cápsula com furos e chifres.
+| A — Vortex Lattice | giroide em coordenadas de vórtice + poço + braços | teia densa e confusa; muitas células pequenas, sem leitura clara do vazio |
+| B — Turbine Sails | só fitas torcidas em espiral | lê-se como turbina/ventilador — mecânico |
+| **C — Tensioned Web** | lâminas recortadas em coordenadas de vórtice + nervuras | vazio dominante, anel de cavidades, festões e pontas em crescente → **escolhida** |
 
 ## Arquivos
 
 ```
-unbound/
-├── scripts/
-│   ├── hybrid_field.py   campos: TPMS, deformação, envelope, chifres, vazio, variações
-│   ├── mesh_variant.py   avalia o campo na grade e extrai a superfície (marching cubes)
-│   └── build_hybrid.py   Blender: limpeza, redução, UV, atributos, verificações, .blend + GLB
-├── blender/the-unbound-beyond-form.blend
-└── archive/membranes-v1/ protótipo anterior (scripts, .blend, GLB)
-public/lab/unbound/
-├── beyond-form.glb       modelo do laboratório
-├── study/beyond-form-{A,B,C}.glb
-└── reference/beyond-form.png  recorte da prancha oficial (somente laboratório)
+unbound/scripts/
+  hybrid_field.py   campos: lâminas, recortes, vórtice, nervuras, anel, variações A/B/C
+  mesh_variant.py   avalia o campo na grade e extrai a superfície (marching cubes)
+  build_hybrid.py   Blender: limpeza, redução, UV, atributos, verificações, .blend + GLB
+unbound/blender/the-unbound-beyond-form.blend
+public/lab/unbound/beyond-form.glb · study/beyond-form-{A,B,C}.glb · reference/beyond-form.png
 ```
 
-Regenerar (Python com `bpy`, `numpy`, `scikit-image`):
+Regenerar (Python com `bpy`, `numpy`, `scikit-image`, `scipy`):
 
 ```bash
 cd unbound/scripts
-python mesh_variant.py A /tmp/A.npz 0.012
-python build_hybrid.py A /tmp/A.npz ../../public/lab/unbound/beyond-form.glb ../blender/the-unbound-beyond-form.blend 60000
+python mesh_variant.py C /tmp/C.npz 0.0085
+python build_hybrid.py C /tmp/C.npz ../../public/lab/unbound/beyond-form.glb ../blender/the-unbound-beyond-form.blend 60000
 ```
 
-## Topologia e atributos (preparação para morph targets e física)
+## Topologia e atributos
 
-- Malha única, contínua, triangular, 29 986 vértices / 60 000 triângulos; 0 arestas não
-  manifold; 0 pares de faces com auto-interseção (verificado no build).
-- Futuros estados = deformações desta mesma malha (mesma ordem de vértices); a geometria
-  atual é a geometria de repouso.
-- `TEXCOORD_0`: ilhas contínuas (Smart UV Project).
-- `_REGION`: 0 = membrana, 1 = borda tensionada (recorte do envelope/vazio), 2 = extremidade.
-- `_ANCHOR`: 1 no núcleo denso (centro) → 0 a ~0,5 unidade.
-- `_FLEX`: 0 no núcleo → 1 nas extremidades.
-- `_STIFFNESS`: rigidez local (núcleo e bordas mais rígidos).
+- Malha única contínua (fragmentos soltos removidos), 30 011 vértices / 60 000 triângulos.
+- Base para morph targets futuros: os estados serão deformações desta malha (mesma ordem de vértices).
+- `TEXCOORD_0` (Smart UV Project), normais suaves.
+- `_REGION` 0 membrana · 1 borda tensionada · 2 extremidade; `_ANCHOR` 1 no anel do vazio;
+  `_FLEX` 0 no núcleo → 1 nas pontas; `_STIFFNESS` rigidez local;
+  `_GLOW` proximidade da borda da membrana (costuras luminosas); `_LAYER` 0 frontal · 1 posterior.
 
-## Material translúcido preliminar (`src/lab/unbound/membrane.ts`)
+## Material (`src/lab/unbound/membrane.ts`, parâmetros em `config.ts` → `membrane`)
 
-Shader próprio, mistura **aditiva sem escrita de profundidade** (independente de ordem →
-sem artefatos de ordenação de transparência; camadas sobrepostas ficam mais densas):
-densidade base baixa + Fresnel (bordas e superfícies rasantes) + microfibras direcionais
-(listras seguindo a torção da entidade) + luz lateral suave + atenuação por profundidade.
-Parâmetros em `src/lab/unbound/config.ts` (`membrane`).
+Shader próprio, mistura aditiva sem escrita de profundidade (independente de ordem → sem
+artefatos de ordenação; sobreposições ficam mais densas): base tênue + Fresnel + costuras (`_GLOW`)
++ microfibras em espiral logarítmica (seguem o vórtice) + luz lateral + atenuação por profundidade;
+camada posterior a 55 %.
