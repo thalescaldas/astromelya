@@ -116,6 +116,9 @@ export function Exhibition({ projects }: { projects: Project[] }) {
       <figure
         className={styles.frame}
         data-media
+        data-passage-media
+        data-passage-src={p.cover.src}
+        data-passage-aspect={p.cover.width / p.cover.height}
         onMouseEnter={() => setColored(true)}
         onMouseLeave={() => setColored(false)}
         onFocus={() => setColored(true)}

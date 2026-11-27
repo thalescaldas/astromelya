@@ -1,0 +1,113 @@
+/* ── The Passage ─────────────────────────────────────────────────────────── */
+.passage-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 8; /* abaixo do cabeçalho (z 10): cabeçalho persistente */
+  display: none;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+}
+
+.passage-clone {
+  position: fixed;
+  z-index: 9;
+  object-fit: fill;
+  filter: grayscale(1) contrast(1.02);
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+/* durante a transição compartilhada o hero real aguarda o clone pousar */
+html[data-passage-shared] [data-passage-hero] {
+  visibility: hidden;
+}
+
+/* entradas próprias de cada página */
+@keyframes passage-emerge {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes passage-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Home: a flor emerge da escuridão */
+html[data-passage-enter="home"] main figure {
+  animation: passage-emerge 1100ms var(--ease-out) both;
+}
+
+/* About: revelação gradual do conteúdo do primeiro capítulo */
+html[data-passage-enter="about"] main article section > div > * {
+  animation: passage-rise 900ms var(--ease-out) both;
+}
+html[data-passage-enter="about"] main article section > div > :nth-child(2) { animation-delay: 160ms; }
+html[data-passage-enter="about"] main article section > div > :nth-child(3) { animation-delay: 320ms; }
+html[data-passage-enter="about"] main article section > div > :nth-child(n + 4) { animation-delay: 480ms; }
+
+/* Projects: a mídia emerge antes das informações */
+html[data-passage-enter="projects"] main figure {
+  animation: passage-emerge 800ms var(--ease-out) both;
+}
+html[data-passage-enter="projects"] main figure ~ section,
+html[data-passage-enter="projects"] main figure ~ nav,
+html[data-passage-enter="projects"] main > section {
+  animation: passage-rise 700ms var(--ease-out) 380ms both;
+}
+
+/* Immersion: identificação após a mídia */
+html[data-passage-enter="immersion"] main article > section:first-child > :last-child {
+  animation: passage-rise 700ms var(--ease-out) 300ms both;
+}
+
+/* Contact: o texto chega depois que o ponto luminoso origina as ondas */
+html[data-passage-enter="contact"] main > section,
+html[data-passage-enter="contact"] main > footer {
+  animation: passage-rise 800ms var(--ease-out) 520ms both;
+}
+
+/* ── Cursor ─────────────────────────────────────────────────────────────── */
+.passage-cursor-ring,
+.passage-cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  display: none;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 200ms ease;
+  will-change: transform;
+}
+
+.passage-cursor-ring {
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.passage-cursor-dot {
+  width: 4px;
+  height: 4px;
+  background: #fff;
+}
+
+html[data-cursor] .passage-cursor-ring,
+html[data-cursor] .passage-cursor-dot {
+  display: block;
+}
+
+/* cursor nativo oculto apenas com o cursor customizado ativo; campos de texto mantêm o nativo */
+html[data-cursor],
+html[data-cursor] * {
+  cursor: none !important;
+}
+
+html[data-cursor] input,
+html[data-cursor] textarea,
+html[data-cursor] [contenteditable] {
+  cursor: text !important;
+}

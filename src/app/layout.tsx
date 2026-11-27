@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Manrope } from "next/font/google";
 import { createBloomBootScript } from "@/animations/bloomBoot";
 import { getActivePhase } from "@/config/evolution";
+import { Passage } from "@/components/passage/Passage";
 import { site } from "@/config/site";
 import "@/styles/globals.css";
 
@@ -64,7 +65,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         {bloomBootScript && <script dangerouslySetInnerHTML={{ __html: bloomBootScript }} />}
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Passage />
+      </body>
     </html>
   );
 }

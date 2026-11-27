@@ -11,7 +11,7 @@ export function Hero({ project }: { project: Project }) {
   const reducedMotion = useReducedMotion();
   return (
     <section className={styles.hero} aria-labelledby="work-title">
-      <ColorReveal className={styles.heroMedia} label={`${project.title} — reveal colors`}>
+      <ColorReveal className={styles.heroMedia} label={`${project.title} — reveal colors`} hero>
         <MediaView media={project.media} className={styles.fill} reducedMotion={reducedMotion} />
       </ColorReveal>
       <div className={styles.heroInfo}>
