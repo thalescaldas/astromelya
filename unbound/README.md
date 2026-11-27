@@ -5,13 +5,16 @@ Referências: `public/lab/unbound/reference/ethereal-continuum-concepts.webp` (p
 frontal usado na vista `compare`). Geometria anterior (anatomia espacial) preservada no branch
 `backup/unbound-spatial-v1` e em `scripts/build_spatial.py`.
 
-Geometria atual: `scripts/build_continuum.py` — fita única em S vertical (espinha 3D), torcida
-~1.5π e enrolada em arco transversal, formando bolsões; 10 cavidades elípticas recortadas em
-espaço de parâmetro (bordas ajustadas sobre a curva de corte); cauda inferior afilada e dois
-chifres superiores (entalhe). Grade fixa 280 × 76 com faces removidas de forma determinística
-(pronta para morph targets): 14 302 vértices / 26 934 triângulos, 1 componente, 0 arestas não
-manifold, 0 auto-interseções. Atributos: `_REGION`, `_ANCHOR`, `_FLEX`, `_STIFFNESS`, `_GUIDE`;
-UV (u ao longo da altura, v através).
+Geometria atual (C.1.2): `scripts/build_continuum.py` — fita em S vertical (espinha 3D) torcida
+~1.5π, com seção transversal em espiral integrada (curvatura cresce para as bordas): as bordas se
+enrolam para dentro e formam membranas secundárias em outras profundidades, ligadas continuamente à
+principal. Cavidades orgânicas abrem-se onde a membrana encara o observador, moduladas por um padrão
+celular; onde a superfície fica de perfil restam aros e pontes curvas. Volume extra nos lobos
+superior/inferior; dois chifres (entalhe parabólico) e cauda afilada. Bordas ajustadas sobre o campo
+de corte com salvaguarda contra triângulos invertidos; ilhas descartadas. Grade fixa 300 × 100
+(pronta para morph targets): 20 570 vértices / 39 178 triângulos, 1 componente, 0 arestas não
+manifold, 0 auto-interseções. Versão anterior: branch `backup/unbound-continuum-v1`.
+Atributos: `_REGION`, `_ANCHOR`, `_FLEX`, `_STIFFNESS`, `_GUIDE`; UV (u altura, v largura).
 
 ```bash
 python unbound/scripts/build_continuum.py public/lab/unbound/beyond-form.glb unbound/blender/the-unbound-beyond-form.blend

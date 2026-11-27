@@ -16,13 +16,13 @@ import numpy as np
 import bpy, bmesh
 from mathutils.bvhtree import BVHTree
 
-NU, NV, H = 280, 76, 3.2
+NU, NV, H = 300, 100, 3.2
 u = np.linspace(0, 1, NU); v = np.linspace(-1, 1, NV)
 ss = lambda a, b, x: np.clip((x - a) / (b - a), 0, 1) ** 2 * (3 - 2 * np.clip((x - a) / (b - a), 0, 1))
 
 # ── espinha em S ─────────────────────────────────────────────────────────────
 def spine(t):
-    return np.stack([-0.5 * np.sin(2 * np.pi * t) + 0.18 * t - 0.06,
+    return np.stack([-0.36 * np.sin(2 * np.pi * t) + 0.1 * t - 0.04,
                      H * (t - 0.5),
                      0.22 * np.sin(np.pi * (1.4 * t + 0.15)) - 0.1], -1)
 
@@ -38,7 +38,8 @@ def frame(t):
 
 def width(t):                                                              # meia-largura
     body = np.sin(np.pi * np.clip(0.02 + 0.98 * t, 0, 1)) ** 0.55
-    return 0.04 + 0.82 * body * (1 + 0.22 * np.sin(2 * np.pi * t + 0.9)) + 0.12 * ss(0.8, 1, t)
+    return (0.04 + 0.95 * body * (1 + 0.22 * np.sin(2 * np.pi * t + 0.9)) + 0.12 * ss(0.8, 1, t)
+           + 0.16 * (np.exp(-((t - 0.78) / 0.09) ** 2) + np.exp(-((t - 0.2) / 0.08) ** 2)))  # volume sup./inf.
 
 def curl(t):                                                               # ângulo do arco (k·w)
     return 1.5 + 0.8 * np.sin(2 * np.pi * t + 0.6) + 0.6 * ss(0.85, 1, t)
@@ -46,27 +47,56 @@ def curl(t):                                                               # ân
 def surface(U, V):
     C = spine(U); T, B, N = frame(U)
     w = width(U); off = 0.08 * np.sin(np.pi * 2.2 * U + 0.4)              # assimetria transversal
-    s = (V + off) * w
-    k = curl(U) / w
-    a, b = np.sin(k * s) / k, (1 - np.cos(k * s)) / k
+    # seção transversal integrada: dobras que invertem a curvatura criam membranas
+    # secundárias em profundidades distintas, ligadas continuamente à principal
+    Vs = np.asarray(V + off); M = 72
+    q = np.linspace(0, 1, M)[None, :] * Vs.reshape(-1)[:, None]          # t de 0 até V
+    Uq = np.asarray(U).reshape(-1)[:, None]
+    vol = np.exp(-((Uq - 0.78) / 0.12) ** 2) + np.exp(-((Uq - 0.22) / 0.12) ** 2)
+    side = np.sign(q + 1e-12)
+    amp = 1 + 0.12 * side * np.sin(2 * np.pi * Uq + 1.0)                 # assimetria entre bordas
+    c0 = 0.9 + 0.45 * np.sin(2 * np.pi * Uq + 0.6)
+    c1 = 2.4 * (0.85 + 0.3 * vol) * (1 - 0.75 * ss(0.82, 0.97, Uq) - 0.6 * ss(0.14, 0.02, Uq))  # pontas se abrem                                        # espiral: bordas enrolam para dentro
+    dth = (c0 + c1 * np.abs(q)) * amp + 0.35 * np.sin(np.pi * 3.1 * q - 2 * np.pi * Uq)
+    th = np.concatenate([np.zeros((len(q), 1)), np.cumsum(0.5 * (dth[:, 1:] + dth[:, :-1]) * np.diff(q, axis=1), 1)], 1)
+    dq = np.diff(q, axis=1)
+    a = np.sum(0.5 * (np.cos(th[:, 1:]) + np.cos(th[:, :-1])) * dq, 1).reshape(np.shape(U)) * w
+    b = np.sum(0.5 * (np.sin(th[:, 1:]) + np.sin(th[:, :-1])) * dq, 1).reshape(np.shape(U)) * w
     P = C + a[..., None] * B + b[..., None] * N
-    hook = (ss(0.86, 1, U) * np.abs(V) ** 2 * 0.22 + ss(0.14, 0, U) * 0.08)  # ganchos nas pontas
+    hook = (ss(0.86, 1, U) * np.abs(V) ** 2 * 0.12 + ss(0.14, 0, U) * 0.08)  # ganchos nas pontas
     return P + hook[..., None] * (N * np.sign(V + 1e-9)[..., None] * 0.6 + T * 0.4)
 
 # ── cortes (d<0 = removido), métrica: altura × largura ──────────────────────
-HOLES = [  # (u0, v0, ru [m], rv [frac. largura])
-    (0.79, -0.08, 0.26, 0.52), (0.66, 0.36, 0.20, 0.38), (0.565, -0.42, 0.14, 0.30),
-    (0.47, 0.16, 0.19, 0.44), (0.355, -0.32, 0.19, 0.38), (0.265, 0.44, 0.14, 0.28),
-    (0.18, -0.12, 0.16, 0.44), (0.085, 0.52, 0.07, 0.2), (0.895, 0.58, 0.07, 0.18),
-    (0.67, -0.80, 0.07, 0.12),
+# rede de cavidades: grade escalonada com jitter determinístico; o que sobra entre
+# elas são pontes curvas e membranas finas (a borda externa permanece como aro)
+HOLES = [  # (u0, v0, ru [m], rv [frac. largura], rotação, semente)
+    (0.73, 0.02, 0.36, 0.52, 0.3, 1), (0.31, -0.04, 0.33, 0.50, -0.4, 2),     # vazios dos lobos
+    (0.52, 0.10, 0.17, 0.36, 0.9, 3),                                          # cintura
+    (0.62, -0.66, 0.10, 0.17, -0.5, 4), (0.86, 0.60, 0.08, 0.16, 0.7, 5), (0.585, 0.66, 0.09, 0.15, 0.2, 6),
+    (0.44, -0.62, 0.09, 0.16, 1.0, 7), (0.41, 0.66, 0.07, 0.14, -0.8, 8), (0.16, 0.62, 0.08, 0.16, 0.4, 9),
+    (0.12, -0.56, 0.06, 0.15, -0.6, 10), (0.22, -0.74, 0.05, 0.10, 0.1, 11), (0.80, -0.70, 0.06, 0.12, 0.9, 12),
 ]
+VIEW = np.array([0.12, 0.06, 1.0]) / np.linalg.norm([0.12, 0.06, 1.0])   # câmera do laboratório
+
+def openness(U, V):
+    """>0 onde a membrana se abre: regiões voltadas ao observador, quebradas por um
+    padrão celular orgânico; onde a superfície fica de perfil restam aros e pontes."""
+    U, V = np.asarray(U, float), np.asarray(V, float); e = 2e-3
+    Pu = surface(np.clip(U + e, 0, 1), V) - surface(np.clip(U - e, 0, 1), V)
+    Pv = surface(U, np.clip(V + e, -1, 1)) - surface(U, np.clip(V - e, -1, 1))
+    n = np.cross(Pu, Pv); n /= np.linalg.norm(n, axis=-1, keepdims=True) + 1e-12
+    facing = np.abs(n @ VIEW)
+    cell = np.cos(2 * np.pi * (5.2 * U + 0.7 * V)) * np.cos(2 * np.pi * (1.25 * V - 2.1 * U) + 1.0)
+    F = facing + 0.3 * cell + 0.08 * np.sin(17 * U + 3 * V) - 0.84
+    keep = ss(0.06, 0.2, 1 - np.abs(V)) * ss(0.04, 0.12, U) * ss(0.0, 0.05, 0.84 - U)
+    return np.where(keep > 0, F * keep - 0.02 * (1 - keep), -0.05)
+
 def cut(U, V):
-    d = np.full(np.shape(U), 10.0)
-    for u0, v0, ru, rv in HOLES:
-        e = np.sqrt(((U - u0) * H / ru) ** 2 + ((V - v0) / rv) ** 2)
-        d = np.minimum(d, (e - 1) * min(ru, rv * 0.5))
-    g = 0.97 * ((U - 0.83) / 0.17).clip(0) ** 0.75                         # entalhe → dois chifres
-    notch = np.where(U > 0.83, np.abs(V - 0.12 + 0.1 * (U - 0.83)) - g, 10.0) * 0.5
+    d = -0.15 * openness(U, V)
+    rt = ((U - 0.83) / 0.17).clip(0, 1); rb = ((0.13 - U) / 0.13).clip(0, 1)
+    notch = (np.abs(V - 0.04 + 0.2 * rt * 0.17 + 0.04 * np.sin(9 * U)) - (0.87 * np.sqrt(rt) - 0.03)) * 0.5  # dois chifres
+    tail = ((1.06 - 0.9 * rb ** 0.8) - np.abs(V + 0.25 * rb)) * 0.5
+    notch = np.minimum(notch, tail)                                        # cauda afilada
     return np.minimum(d, notch)
 
 UU, VV = np.meshgrid(u, v, indexing="ij")
@@ -74,6 +104,18 @@ quads = np.array([(i * NV + j, (i + 1) * NV + j, (i + 1) * NV + j + 1, i * NV + 
                   for i in range(NU - 1) for j in range(NV - 1)])
 cu = UU.ravel()[quads].mean(1); cv = VV.ravel()[quads].mean(1)
 quads = quads[cut(cu, cv) > 0]
+# descarta ilhas: mantém o maior componente (conectividade por aresta)
+par = np.arange(len(quads)); own = {}
+def root(x):
+    while par[x] != x: par[x] = par[par[x]]; x = par[x]
+    return x
+for fi, q in enumerate(quads):
+    for a, b in zip(q, np.roll(q, -1)):
+        k = (min(a, b), max(a, b))
+        if k in own: par[root(fi)] = root(own[k])
+        else: own[k] = fi
+rt_ = np.array([root(i) for i in range(len(quads))])
+quads = quads[rt_ == np.bincount(rt_).argmax()]
 
 # ajusta vértices da borda dos furos sobre a curva de corte (Newton em (u,v))
 pu, pv = UU.ravel().copy(), VV.ravel().copy()
@@ -84,13 +126,27 @@ for q in quads:
         k = (min(a, b), max(a, b)); edge_cnt[k] = edge_cnt.get(k, 0) + 1
 bverts = np.unique([x for k, c in edge_cnt.items() if c == 1 for x in k])
 inner = bverts[(np.abs(pv[bverts]) < 0.999) & (pu[bverts] > 1e-6) & (pu[bverts] < 1 - 1e-6)]
-for _ in range(6):
+for _ in range(16):
     du, dv = 1e-4, 1e-4
     d0 = cut(pu[inner], pv[inner])
     gu = (cut(pu[inner] + du, pv[inner]) - d0) / du; gv = (cut(pu[inner], pv[inner] + dv) - d0) / dv
     g2 = gu ** 2 + gv ** 2 + 1e-12
-    pu[inner] -= 0.9 * d0 * gu / g2; pv[inner] -= 0.9 * d0 * gv / g2
+    su, sv = np.clip(-0.9 * d0 * gu / g2, -0.5 / (NU - 1), 0.5 / (NU - 1)), np.clip(-0.9 * d0 * gv / g2, -1.0 / (NV - 1), 1.0 / (NV - 1))
+    pu[inner] += su; pv[inner] += sv
 pu = pu.clip(0, 1); pv = pv.clip(-1, 1)
+# salvaguarda: desfaz o ajuste em vértices de triângulos invertidos/degenerados
+u_ref, v_ref = UU.ravel(), VV.ravel()
+for _ in range(12):
+    bad = np.zeros(len(pu), bool)
+    for tri in ((0, 1, 2), (0, 2, 3)):
+        A, B, C = (quads[:, k] for k in tri)
+        area = ((pu[B] - pu[A]) * (pv[C] - pv[A]) - (pu[C] - pu[A]) * (pv[B] - pv[A]))
+        ref = ((u_ref[B] - u_ref[A]) * (v_ref[C] - v_ref[A]) - (u_ref[C] - u_ref[A]) * (v_ref[B] - v_ref[A]))
+        f = area / ref < 0.005
+        bad[A[f]] = bad[B[f]] = bad[C[f]] = True
+    moved = bad & ((np.abs(pu - u_ref) > 1e-7) | (np.abs(pv - v_ref) > 1e-7))
+    if not moved.any(): break
+    pu[moved] = u_ref[moved] + 0.5 * (pu[moved] - u_ref[moved]); pv[moved] = v_ref[moved] + 0.5 * (pv[moved] - v_ref[moved])
 
 remap = -np.ones(NU * NV, np.int64); remap[used] = np.arange(len(used))
 faces = remap[quads].tolist()
@@ -143,6 +199,8 @@ pairs = [(a, b) for a, b in tree.overlap(tree) if a < b and not set(x.index for 
 if "--diag" in sys.argv and pairs:
     fu = [float(np.mean([pu[x.index] for x in bm.faces[f].verts])) for a, b in pairs for f in (a, b)]
     print("DIAG u:", np.histogram(fu, bins=10, range=(0, 1))[0].tolist())
+    fc = lambda f: (round(float(np.mean([pu[x.index] for x in bm.faces[f].verts])), 3), round(float(np.mean([pv[x.index] for x in bm.faces[f].verts])), 2))
+    print("DIAG pairs:", [(fc(a), fc(b)) for a, b in pairs[::3]])
 bm.free()
 ext = verts.max(0) - verts.min(0)
 bpy.ops.wm.save_as_mainfile(filepath=sys.argv[2], compress=True)
