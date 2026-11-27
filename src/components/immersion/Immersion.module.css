@@ -1,0 +1,330 @@
+/* The Immersion — dimensões do Blueprint: título 96/42, seção 56/30, corpo 18/16, ids 11/10,
+   margens 64/24, espaço entre seções 160/80 px. */
+.page {
+  --m: 24px;
+  --gap: 80px;
+  background: var(--color-bg);
+}
+
+@media (min-width: 900px) {
+  .page {
+    --m: 64px;
+    --gap: 160px;
+  }
+}
+
+/* revelação de cor */
+.reveal img,
+.reveal video,
+.reveal canvas {
+  filter: grayscale(1);
+  transition: filter 800ms var(--ease-out);
+}
+
+.reveal:hover img,
+.reveal:hover video,
+.reveal:hover canvas,
+.reveal:focus-within img,
+.reveal:focus-within video,
+.reveal:focus-within canvas,
+.reveal[data-colored] img,
+.reveal[data-colored] video,
+.reveal[data-colored] canvas {
+  filter: grayscale(0);
+}
+
+.reveal:focus-visible {
+  outline: 1px solid var(--color-focus);
+  outline-offset: 4px;
+}
+
+.fill {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* hero */
+.hero {
+  position: relative;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.heroMedia {
+  position: absolute;
+  inset: clamp(5rem, 12vh, 7rem) var(--m) clamp(11rem, 26vh, 14rem);
+}
+
+.heroInfo {
+  position: absolute;
+  left: var(--m);
+  right: var(--m);
+  bottom: clamp(2.5rem, 7vh, 4rem);
+}
+
+.label,
+.sectionLabel {
+  margin-bottom: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-gray-500);
+}
+
+@media (min-width: 900px) {
+  .label,
+  .sectionLabel {
+    font-size: 0.6875rem;
+  }
+}
+
+.title {
+  max-width: 14em;
+  font-family: var(--font-sans);
+  font-size: clamp(2.625rem, 1.2rem + 5.2vw, 6rem);
+  font-weight: 300;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  color: var(--color-white);
+  text-wrap: balance;
+}
+
+/* seções */
+.section {
+  margin: var(--gap) var(--m) 0;
+  max-width: 72rem;
+}
+
+.concept {
+  max-width: 20em;
+  font-family: var(--font-sans);
+  font-size: clamp(1.875rem, 1.2rem + 2.4vw, 3.5rem);
+  font-weight: 300;
+  line-height: 1.12;
+  color: var(--color-white);
+}
+
+.body {
+  max-width: 38rem;
+  margin-top: 1.5rem;
+  font-size: clamp(1rem, 0.95rem + 0.2vw, 1.125rem);
+  line-height: 1.7;
+  color: var(--color-gray-200);
+}
+
+.frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  background: var(--color-gray-900);
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+  gap: clamp(12px, 2vw, 24px);
+  list-style: none;
+}
+
+.thumb {
+  display: block;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: zoom-in;
+}
+
+.thumb img {
+  width: 100%;
+  height: auto;
+}
+
+.audio {
+  max-width: 38rem;
+}
+
+.audioTitle {
+  margin-bottom: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-gray-500);
+}
+
+.audio audio {
+  width: 100%;
+  filter: grayscale(1) invert(0.9);
+}
+
+.link {
+  display: inline-flex;
+  gap: 0.45em;
+  padding: 0.4rem 0;
+  font-size: clamp(1rem, 0.95rem + 0.2vw, 1.125rem);
+  color: var(--color-gray-200);
+  border-bottom: 1px solid var(--color-gray-500);
+  transition: color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out);
+}
+
+.link:hover,
+.link:focus-visible {
+  color: var(--color-white);
+  border-color: var(--color-white);
+}
+
+/* créditos */
+.credits {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 38rem;
+}
+
+.credits div {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1fr) 2fr;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-gray-900);
+}
+
+.credits dt {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-gray-500);
+}
+
+.credits dd {
+  color: var(--color-gray-200);
+}
+
+.signature {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-top: 2.5rem;
+}
+
+.signature .sectionLabel {
+  margin: 0;
+}
+
+.signatureMark {
+  display: block;
+  width: 110px;
+  height: auto;
+  color: var(--color-white);
+  overflow: visible;
+}
+
+@media (min-width: 900px) {
+  .signatureMark {
+    width: 140px;
+  }
+}
+
+/* continuação */
+.continuation {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  margin: var(--gap) var(--m) 0;
+  padding-bottom: clamp(3rem, 10vh, 6rem);
+}
+
+.next {
+  display: grid;
+  gap: 1rem;
+  max-width: 44rem;
+}
+
+.next .sectionLabel {
+  margin: 0;
+}
+
+.nextMedia img {
+  width: 100%;
+  height: auto;
+}
+
+.nextTitle {
+  font-family: var(--font-sans);
+  font-size: clamp(1.875rem, 1.2rem + 2.4vw, 3.5rem);
+  font-weight: 300;
+  color: var(--color-gray-200);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.next:hover .nextTitle,
+.next:focus-visible .nextTitle {
+  color: var(--color-white);
+}
+
+/* visualizador de imagens */
+.viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  background: rgba(0, 0, 0, 0.97);
+}
+
+.viewerImage {
+  max-width: calc(100vw - 2 * var(--m, 24px));
+  max-height: calc(100dvh - 9rem);
+  object-fit: contain;
+  cursor: zoom-in;
+}
+
+.zoomed {
+  max-width: none;
+  max-height: none;
+  width: min(200vw, 2600px);
+  cursor: zoom-out;
+}
+
+.viewerClose,
+.viewerNav button {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-gray-200);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.viewerClose {
+  position: fixed;
+  top: max(var(--edge), env(safe-area-inset-top));
+  right: max(var(--edge), env(safe-area-inset-right));
+  padding: 0.6rem 0;
+}
+
+.viewerNav {
+  position: fixed;
+  bottom: max(1.5rem, env(safe-area-inset-bottom));
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  color: var(--color-gray-500);
+}
+
+.viewerNav button {
+  padding: 0.6rem 0.4rem;
+}

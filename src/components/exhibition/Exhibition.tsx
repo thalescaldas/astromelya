@@ -1,13 +1,12 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { routes } from "@/config/site";
 import type { Project } from "@/projects";
 import styles from "./Exhibition.module.css";
+import { MediaView } from "./MediaView";
 
-const ModelView = dynamic(() => import("./ModelView").then((m) => m.ModelView), { ssr: false });
 
 /** Dissolução no preto: metade saindo, metade entrando (total 1200 ms). */
 const TRANSITION_MS = 1200;
@@ -17,33 +16,8 @@ const SWIPE_THRESHOLD = 50;
 const pad = (n: number) => String(n).padStart(2, "0");
 
 function Media({ project, active, colored, reducedMotion }: { project: Project; active: boolean; colored: boolean; reducedMotion: boolean }) {
-  const m = project.media;
-  const cls = `${styles.media} ${colored ? styles.colored : ""}`;
   if (!active) return null; // carregamento sob demanda: só a obra atual
-  if (m.type === "image") {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img className={cls} src={m.src} alt={m.alt} width={m.width} height={m.height} decoding="async" />;
-  }
-  if (m.type === "video") {
-    return (
-      <video
-        className={cls}
-        src={m.src}
-        poster={m.poster}
-        aria-label={m.alt}
-        muted
-        playsInline
-        loop
-        autoPlay={!reducedMotion}
-        preload="metadata"
-      />
-    );
-  }
-  return (
-    <div className={cls}>
-      <ModelView src={m.src} label={m.alt} reducedMotion={reducedMotion} />
-    </div>
-  );
+  return <MediaView media={project.media} className={`${styles.media} ${colored ? styles.colored : ""}`} reducedMotion={reducedMotion} />;
 }
 
 export function Exhibition({ projects }: { projects: Project[] }) {

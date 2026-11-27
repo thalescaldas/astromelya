@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { StubPage } from "@/components/page/StubPage";
+import { SiteHeader } from "@/components/header/SiteHeader";
+import { Immersion } from "@/components/immersion/Immersion";
 import { routes } from "@/config/site";
 import { getPublishedProjects } from "@/projects";
 
+/**
+ * The Immersion — páginas individuais (/projects/[slug]).
+ * Somente obras publicadas; slugs inválidos ou rascunhos resultam em 404.
+ */
 const projects = getPublishedProjects();
 
-/**
- * Páginas individuais de projetos (/projects/[slug]).
- * Geradas a partir do registro em src/projects — hoje vazio, então nenhuma
- * página é publicada e qualquer slug resulta em 404.
- */
 export const dynamicParams = false;
 
 export function generateStaticParams() {
@@ -23,13 +23,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const project = projects.find((p) => p.slug === slug);
   return project
-    ? { title: project.title, alternates: { canonical: `${routes.projects}/${project.slug}` } }
+    ? {
+        title: project.title,
+        description: project.concept,
+        alternates: { canonical: `${routes.projects}/${project.slug}` },
+      }
     : {};
 }
 
 export default async function ProjectPage({ params }: Props) {
   const { slug } = await params;
-  const project = projects.find((p) => p.slug === slug);
-  if (!project) notFound();
-  return <StubPage title={project.title} route={routes.projects} />;
+  const i = projects.findIndex((p) => p.slug === slug);
+  if (i < 0) notFound();
+  const next = projects.length > 1 ? projects[(i + 1) % projects.length] : null;
+  return (
+    <>
+      <SiteHeader current={routes.projects} />
+      <main>
+        <Immersion project={projects[i]} next={next} />
+      </main>
+    </>
+  );
 }

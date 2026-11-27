@@ -25,9 +25,21 @@ export interface Project {
   cover: { src: string; width: number; height: number; alt: string };
   /** Mídia principal na exposição (carregada sob demanda). */
   media: ProjectMedia;
-  description?: string;
+  /** Conceito breve (frase curta) e descrição (parágrafos). */
+  concept?: string;
+  description?: string[];
+  /** Módulos opcionais da página da obra (renderizados somente quando existem). */
+  modules?: ProjectModule[];
+  credits?: { role: string; name: string }[];
   externalLink?: string;
 }
+
+export type ProjectModule =
+  | { type: "gallery"; title?: string; images: { src: string; width: number; height: number; alt: string }[] }
+  | { type: "video"; title?: string; src: string; poster?: string; alt: string }
+  | { type: "model"; title?: string; src: string; alt: string }
+  | { type: "audio"; title: string; src: string }
+  | { type: "external"; title?: string; href: string; label: string };
 
 /** Obras reais. Vazio até a curadoria confirmar as primeiras obras. */
 export const PROJECTS: readonly Project[] = [];
@@ -43,6 +55,22 @@ const DEV_PROJECTS: readonly Project[] = [
     status: "published",
     cover: { src: "/flowers/genesis.webp", width: 1672, height: 941, alt: "Test image" },
     media: { type: "image", src: "/flowers/genesis.webp", width: 1672, height: 941, alt: "Test image" },
+    concept: "Test concept line.",
+    description: ["Test description paragraph. Development only."],
+    modules: [
+      {
+        type: "gallery",
+        title: "Images",
+        images: [
+          { src: "/flowers/genesis.webp", width: 1672, height: 941, alt: "Test gallery image 1" },
+          { src: "/flowers/metamorphosis.webp", width: 1672, height: 941, alt: "Test gallery image 2" },
+        ],
+      },
+      { type: "video", title: "Motion", src: "/flowers/genesis-growth.mp4", poster: "/flowers/genesis.webp", alt: "Test video" },
+      { type: "model", title: "Object", src: "/lab/genesis/genesis.glb", alt: "Test 3D model" },
+      { type: "external", href: "https://example.com", label: "Test external experience" },
+    ],
+    credits: [{ role: "Test role", name: "Test name" }],
   },
   {
     slug: "dev-motion",
