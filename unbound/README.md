@@ -1,15 +1,20 @@
-# The Unbound Hybrid — Beyond Form (etapa C.1.1: anatomia espacial)
+# The Unbound Hybrid — Beyond Form (anatomia oficial: conceito B, Ethereal Continuum)
 
-Geometria atual: `scripts/build_spatial.py` — curva espinhal fechada e assimétrica em 3D em torno
-do vazio central + duas curvas de borda em profundidades distintas (torção alterna entre o plano do
-anel e a profundidade); membranas entre as três curvas-guia relaxadas (Laplaciano, curvas fixas) →
-superfícies tensionadas próximas de mínimas; extremidades em crescente nas bordas externas.
-Malha única 480 × 41 (periódica), 19 680 vértices / 38 400 triângulos; bordas abertas
-intencionais = as duas curvas de borda; 0 arestas não manifold; 0 auto-interseções.
-Atributos: `_REGION`, `_ANCHOR`, `_FLEX`, `_STIFFNESS`, `_GUIDE` (1 nas curvas-guia); UV (u ao redor, v através).
+Referências: `public/lab/unbound/reference/ethereal-continuum-concepts.webp` (prancha A/B/C),
+`ethereal-continuum-views.webp` (frente/lado/costas/¾ do conceito B) e `beyond-form.png` (recorte
+frontal usado na vista `compare`). Geometria anterior (anatomia espacial) preservada no branch
+`backup/unbound-spatial-v1` e em `scripts/build_spatial.py`.
+
+Geometria atual: `scripts/build_continuum.py` — fita única em S vertical (espinha 3D), torcida
+~1.5π e enrolada em arco transversal, formando bolsões; 10 cavidades elípticas recortadas em
+espaço de parâmetro (bordas ajustadas sobre a curva de corte); cauda inferior afilada e dois
+chifres superiores (entalhe). Grade fixa 280 × 76 com faces removidas de forma determinística
+(pronta para morph targets): 14 302 vértices / 26 934 triângulos, 1 componente, 0 arestas não
+manifold, 0 auto-interseções. Atributos: `_REGION`, `_ANCHOR`, `_FLEX`, `_STIFFNESS`, `_GUIDE`;
+UV (u ao longo da altura, v através).
 
 ```bash
-python unbound/scripts/build_spatial.py public/lab/unbound/beyond-form.glb unbound/blender/the-unbound-beyond-form.blend
+python unbound/scripts/build_continuum.py public/lab/unbound/beyond-form.glb unbound/blender/the-unbound-beyond-form.blend
 ```
 
 Laboratório: `/lab/unbound` abre em cinza neutro (clay). Versões anteriores: branches

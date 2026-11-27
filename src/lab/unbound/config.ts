@@ -6,7 +6,7 @@ export const LAB_UNBOUND = {
   model: "/lab/unbound/beyond-form.glb",
   /** Variações estudadas (diagnóstico: &variant=A|B|C): A Vortex Lattice, B Turbine Sails, C Tensioned Web (escolhida). */
   study: { A: "/lab/unbound/study/beyond-form-A.glb", B: "/lab/unbound/study/beyond-form-B.glb", C: "/lab/unbound/study/beyond-form-C.glb" },
-  reference: { src: "/lab/unbound/reference/beyond-form.png", width: 420, height: 560 },
+  reference: { src: "/lab/unbound/reference/beyond-form.png", width: 500, height: 780 },
   camera: { fov: 28, near: 0.05, far: 60, direction: [0.12, 0.06, 1] as const, margin: 1.08 },
   renderer: { maxPixelRatio: 2, background: 0x000000 },
   /** Membrana translúcida preliminar (shader aditivo: sem problemas de ordenação). */
